@@ -7,7 +7,7 @@ It demonstrate how to build microservice that exposes its operation over over al
 
 **Transaction App** is a simple application. From user interface you can only run one or batch of new jobs. Application desided on which worker the new job should be runned. The more jobs started the slower they are performed. Application shows you progress of each jobs and displays information of already completed jobs. 
 
-![Transaction App Overview Diagram](https://github.com/Maxfer4Maxfer/transaction_app/blob/master/docs/pics/Diagrams-Overview.jpg)
+![Transaction App Overview Diagram](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/pics/Diagrams-Overview.jpg)
 
 ## Technology stack
 Programming Languages:
@@ -32,9 +32,10 @@ Third party software components:
 
 ## Deploy
 There are three options for deploying **Transaction App**
-* [Simple docker deploy](https://github.com/Maxfer4Maxfer/transaction_app/blob/master/docs/pics/Diagrams-Overview.jpg)
-* [Docker compose deploy](https://github.com/Maxfer4Maxfer/transaction_app/blob/master/docs/pics/Diagrams-Overview.jpg)
-* [Kubernetes deploy](https://github.com/Maxfer4Maxfer/transaction_app/blob/master/docs/pics/Diagrams-Overview.jpg)
+* [Simple run](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/simple-run.md)
+* [Docker deploy](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/docker-deploy.md)
+* [Docker Compose deploy](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/docker-compose-deploy.md)
+* [Kubernetes deploy](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/kubernetes-deploy.md)
 
 ## Entrypoints
 * http:__*<<ip_address>>*__:80 Transaction App's user interface
@@ -46,19 +47,19 @@ There are three options for deploying **Transaction App**
 ## Components specification
 ui
 
-![ui](https://github.com/Maxfer4Maxfer/transaction_app/blob/master/docs/pics/Diagrams-ui.jpg)
+![ui](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/pics/Diagrams-ui.jpg)
 
 apiserver
 
-![appserver](https://github.com/Maxfer4Maxfer/transaction_app/blob/master/docs/pics/Diagrams-apiserver.jpg)
+![appserver](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/pics/Diagrams-apiserver.jpg)
 
 repository
 
-![repository](https://github.com/Maxfer4Maxfer/transaction_app/blob/master/docs/pics/Diagrams-repository.jpg)
+![repository](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/pics/Diagrams-repository.jpg)
 
 worker
 
-![worker](https://github.com/Maxfer4Maxfer/transaction_app/blob/master/docs/pics/Diagrams-worker.jpg)
+![worker](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/pics/Diagrams-worker.jpg)
 
 
 ## Donations

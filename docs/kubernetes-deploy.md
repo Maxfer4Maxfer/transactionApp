@@ -2,7 +2,7 @@
 
 In this deployment [Docker Machine](https://docs.docker.com/machine) and [Google Cloud Platform](https://cloud.google.com) will be used as a platform for Transaction App deployment.
 
-## Prerequsites
+### Prerequsites
 You need to have a kubernetes cluster. The easiest way is to create a cluster using [Google Cloud Kubernetes Engine](https://cloud.google.com/kubernetes-engine/)
 
 
@@ -64,7 +64,7 @@ cd ./kubernetes
 kubectl create -f .
 ```
 
-## Access application
+### Access application
 You need to know external IPs of ui and apiserver components.
 ```bash
 kubectl get service ui-lb apiserver-lb

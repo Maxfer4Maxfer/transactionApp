@@ -79,9 +79,9 @@ Go to http://<<TRANSACTION_APP_IP>>:80
 
 Directly do REST API requests to apiserver
 ```bash
-curl -d "{}" -X POST http://<<TRANSACTION_APP_IP>>:8081/findfree
-curl -d "{}" -X POST http://<<TRANSACTION_APP_IP>>:8081/getallnodes
-curl -d "{}" -X POST http://<<TRANSACTION_APP_IP>>:8081/newjob
+curl -d "{}" -X POST http://<TRANSACTION_APP_IP>:8081/findfree
+curl -d "{}" -X POST http://<TRANSACTION_APP_IP>:8081/getallnodes
+curl -d "{}" -X POST http://<TRANSACTION_APP_IP>:8081/newjob
 ```
 
 ## Clean up installation
