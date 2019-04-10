@@ -1,0 +1,46 @@
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  labels:
+    app: transaction
+    component: node-exporter
+spec:
+  template:
+    metadata:
+      name: node-exporter
+      labels:
+        app: transaction
+        component: node-exporter
+    spec:
+      containers:
+      - image: quay.io/prometheus/node-exporter
+        name: node-exporter
+        args: ["--path.procfs=/host/proc","--path.sysfs=/host/sys"]
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "0.05"
+          limits:
+            memory: "256Mi"
+            cpu: "0.1"
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: rootfs
+          mountPath: /rootfs
+        - name: sys
+          mountPath: /host/sys
+        - name: proc
+          mountPath: /host/proc
+      volumes:
+      - name: rootfs
+        hostPath:
+          path: /
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: proc
+        hostPath:
+          path: /proc

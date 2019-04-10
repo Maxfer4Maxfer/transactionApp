@@ -1,0 +1,56 @@
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: filebeat
+  labels:
+    app: transaction
+    component: filebeat
+spec:
+  template:
+    metadata:
+      name: filebeat
+      labels:
+        app: transaction
+        component: filebeat
+    spec:
+      containers:
+      - name: filebeat
+        image: docker.elastic.co/beats/filebeat:6.6.2
+        args: [
+          "-strict.perms=false",
+          "-e",
+        ]
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "0.05"
+          limits:
+            memory: "256Mi"
+            cpu: "0.1"
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/share/filebeat/filebeat.yml
+          readOnly: true
+          subPath: filebeat.yml
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: varrundockersock
+          mountPath: /var/run/docker.sock
+          readOnly: true
+      volumes:
+      - name: config-volume
+        configMap:
+          name: filebeat-cfgmap
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+      - name: varrundockersock
+        hostPath:
+          path: /var/run/docker.sock
+
+
+          

@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: repo
+  labels:
+    app: transaction
+    component: repo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction
+      component: repo
+  template:
+    metadata:
+      name: repo
+      labels:
+        app: transaction
+        component: repo
+    spec:
+      containers:
+      - image: docker_hub_user/repository:app_version
+        name: repo

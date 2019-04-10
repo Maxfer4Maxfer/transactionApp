@@ -1,0 +1,62 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+package pb.repo;
+
+// The Repo service definition.
+service Repo {
+  // Register new node
+  rpc RegisterNode (RegisterNodeRequest) returns (RegisterNodeReply) {}
+  // GetAllNodes returns all notes with jobs that registared in the Repository
+  rpc GetAllNodes (GetAllNodesRequest) returns (GetAllNodesReply) {}
+  // NewJob create a new job on a free node. Returns a ID of a new created job
+  rpc NewJob (NewJobRequest) returns (NewJobReply) {}
+}
+
+
+// ===========RegisterNode===========
+message RegisterNodeRequest {
+  string name   = 1;
+  string nodeIP = 2;
+  string nodePort = 3;
+}
+
+message RegisterNodeReply { 
+  string nodeID = 1;
+  string err    = 2;
+ }
+
+// ===========GetAllNodes===========
+message GetAllNodesRequest {
+}
+
+message GetAllNodesReply { 
+  repeated Node nodes = 1;
+  string err    = 2;
+}
+
+message Node { 
+  string ID   = 1;
+  string name = 2;
+  string IP   = 3;
+  string port = 4;
+  int32  jobsCount  = 5;
+  repeated Job jobs = 6;
+
+}
+
+message Job { 
+  string  ID = 1;
+  float   per = 2;
+  float   duration = 3;  // in second
+  google.protobuf.Timestamp startTime = 4;
+  google.protobuf.Timestamp finishTime = 5;
+}
+
+// ===========NewJob===========
+message NewJobRequest {
+}
+
+message NewJobReply { 
+  string ID     = 1;
+  string err    = 2;
+}

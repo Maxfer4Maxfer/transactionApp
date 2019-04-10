@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: prometheus
+  labels:
+    app: transaction
+    component: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction
+      component: prometheus
+  template:
+    metadata:
+      name: prometheus
+      labels:
+        app: transaction
+        component: prometheus
+    spec:
+      containers:
+      - image: prom/prometheus
+        name: prometheus
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/prometheus/prometheus.yml
+          readOnly: true
+          subPath: prometheus_kubernetes.yml
+        - name: config-volume
+          mountPath: /etc/prometheus/alert.rules
+          readOnly: true
+          subPath: alert.rules
+      volumes:
+      - name: config-volume
+        configMap:
+          name: prometheus-cfgmap

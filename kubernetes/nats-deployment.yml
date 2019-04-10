@@ -1,0 +1,28 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: nats
+  labels:
+    app: transaction
+    component: nats
+    repo-db: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction
+      component: nats
+      repo-db: "true"
+  template:
+    metadata:
+      name: nats
+      labels:
+        app: transaction
+        component: nats
+        repo-db: "true"
+    spec:
+      containers:
+      - name: nats
+        image: nats:1.4.1
+

@@ -1,0 +1,41 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+package pb.worker;
+
+// The Worker service definition.
+service Worker {
+  // PingPong interaction
+  rpc Ping (PingRequest) returns (PingReply) {}
+  rpc GetJobs (GetJobsRequest) returns (GetJobsReply) {}
+  rpc NewJob (NewJobRequest) returns (NewJobReply) {}
+}
+
+message PingRequest {
+}
+
+message PingReply {
+   int32 jobs = 1; //jobs query length
+   string err = 2;
+}
+
+message GetJobsRequest {}
+
+message Job { 
+  string ID = 1;
+  float per = 2;
+  float duration = 3;  // in second
+  google.protobuf.Timestamp startTime = 4;
+  google.protobuf.Timestamp finishTime = 5;
+}
+
+message GetJobsReply {
+  repeated Job jobs = 1;
+  string err = 2;
+}
+
+message NewJobRequest {}
+
+message NewJobReply {
+  string id = 1; // id of a new created job
+  string err = 2;
+}

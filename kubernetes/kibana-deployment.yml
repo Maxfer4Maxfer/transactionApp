@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: kibana
+  labels:
+    app: transaction
+    component: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction
+      component: kibana
+  template:
+    metadata:
+      name: kibana
+      labels:
+        app: transaction
+        component: kibana
+    spec:
+      containers:
+      - image: docker.elastic.co/kibana/kibana:6.6.2
+        name: kibana

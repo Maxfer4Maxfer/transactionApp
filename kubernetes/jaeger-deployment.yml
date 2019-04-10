@@ -1,0 +1,25 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: jaeger
+  labels:
+    app: transaction
+    component: jaeger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction
+      component: jaeger
+  template:
+    metadata:
+      name: jaeger
+      labels:
+        app: transaction
+        component: jaeger
+    spec:
+      containers:
+      - name: jaeger
+        image: jaegertracing/all-in-one:latest
+

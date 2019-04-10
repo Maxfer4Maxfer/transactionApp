@@ -1,0 +1,23 @@
+.WorkerList-table-worker th  {
+  border-bottom: 1px solid #dee2e6;
+  font-weight: 400;
+  padding: 5px;
+}
+
+tr:hover {background-color: #f5f5f5;}
+
+.WorkerList-thead tr {
+  font-weight: bold;
+}
+
+.WorkerList-worker {
+  margin: 0 0 40px 0;
+}
+
+.WorkerList-table {
+  width: 100%;
+}
+
+.WorkerList-jobs-count {
+  margin: 0 0 15px 0;
+}

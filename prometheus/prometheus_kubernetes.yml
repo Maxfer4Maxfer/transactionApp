@@ -1,0 +1,107 @@
+global:
+  scrape_interval:     15s # By default, scrape targets every 15 seconds.
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'codelab-monitor'
+
+rule_files:
+- "alert.rules"
+
+alerting:
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets:
+      - "alertmanager:9093"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+
+  #System metrics
+  - job_name: 'prometheus'
+    scrape_interval: 1s
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'cadviser'
+    scheme: https
+
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+    kubernetes_sd_configs:
+    - role: node
+
+    relabel_configs:
+    - action: labelmap
+      regex: __meta_kubernetes_node_label_(.+)
+    - target_label: __address__
+      replacement: kubernetes.default.svc:443
+    - source_labels: [__meta_kubernetes_node_name]
+      regex: (.+)
+      target_label: __metrics_path__
+      replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
+
+  - job_name: 'docker_hosts_node_exporter'
+    scheme: http
+    metrics_path: :9100/metrics
+
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+    kubernetes_sd_configs:
+    - role: node
+    relabel_configs:
+    - action: labelmap
+      regex: __meta_kubernetes_node_label_(.+)
+
+
+  #Application metrics
+  - job_name: 'repo'
+    scrape_interval: 1s
+    static_configs:
+      - targets: ['repo:8080']
+
+  - job_name: 'worker'
+    scrape_interval: 1s
+    static_configs:
+      - targets: ['worker:8080']
+
+
+  - job_name: 'worker1'
+    scrape_interval: 1s
+    metrics_path: :8080/metrics
+    scheme: http   
+
+    kubernetes_sd_configs:
+    - role: service
+
+    relabel_configs:
+    - source_labels: [__meta_kubernetes_service_name]
+      regex: worker
+      action: keep
+    - source_labels: [__meta_kubernetes_service_port_name]
+      regex: port-8080
+      action: keep
+
+
+  - job_name: 'worker2'
+    scrape_interval: 1s
+    metrics_path: :8080/metrics
+    scheme: http   
+
+    kubernetes_sd_configs:
+    - role: pod
+
+    relabel_configs:
+    - source_labels: [__meta_kubernetes_pod_label_component]
+      regex: worker
+      action: keep
+

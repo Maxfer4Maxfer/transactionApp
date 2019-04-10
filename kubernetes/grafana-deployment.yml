@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: grafana
+  labels:
+    app: transaction
+    component: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction
+      component: grafana
+  template:
+    metadata:
+      name: grafana
+      labels:
+        app: transaction
+        component: grafana
+    spec:
+      containers:
+      - image: grafana/grafana
+        name: grafana
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/grafana/provisioning/datasources/datasources.yml
+          readOnly: true
+          subPath: datasources.yml
+        - name: config-volume
+          mountPath: /etc/grafana/provisioning/dashboards/dashboards.yml
+          readOnly: true
+          subPath: dashboards.yml
+        - name: dashboards-volume
+          mountPath: /var/lib/grafana/dashboards
+      volumes:
+      - name: config-volume
+        configMap:
+          name: grafana-cfgmap
+      - name: dashboards-volume
+        configMap:
+          name: grafana-dashboards-cfgmap

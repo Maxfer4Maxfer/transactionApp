@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apiserver
+  labels:
+    app: transaction
+    component: apiserver
+spec:
+  ports:
+  - port: 8080
+    name: port-8080
+    protocol: TCP
+    targetPort: 8080
+  - port: 8081
+    name: port-8081
+    protocol: TCP
+    targetPort: 8081
+  selector:
+    app: transaction
+    component: apiserver

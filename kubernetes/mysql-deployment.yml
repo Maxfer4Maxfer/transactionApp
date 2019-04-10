@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: transaction
+    component: mysql
+    repo-db: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction
+      component: mysql
+      repo-db: "true"
+  template:
+    metadata:
+      name: mysql
+      labels:
+        app: transaction
+        component: mysql
+        repo-db: "true"
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8
+        args: ["--sql_mode=","--default-authentication-plugin=mysql_native_password"]
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: root
+        - name: MYSQL_DATABASE
+          value: repo
+        volumeMounts:
+        - name: mysql-gce-pd-storage
+          mountPath: /data/db
+      volumes:
+      - name: mysql-gce-pd-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc

@@ -1,0 +1,28 @@
+---
+- name: Install and run node_explorer
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: Extract node_exporte.tar.gz into /usr/sbin
+    unarchive:
+      remote_src: true
+      src: https://github.com/prometheus/node_exporter/releases/download/v0.16.0/node_exporter-0.16.0.linux-amd64.tar.gz
+      dest: /usr/sbin
+
+  - name: Create symbolic link
+    file:
+      src: /usr/sbin/node_exporter-0.16.0.linux-amd64
+      dest: /usr/sbin/node_exporter
+      state: link
+
+  - name: Add unit file for node_exporter
+    copy:
+      src: node_exporter.service
+      dest: /etc/systemd/system/node_exporter.service
+
+  - name: Enable node_exporter
+    systemd: name=node_exporter enabled=yes
+
+  - name: Start node_exporter
+    systemd: name=node_exporter state=started

@@ -1,0 +1,227 @@
+version: '3'
+
+services:
+
+#Application
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    command: --sql_mode="" --default-authentication-plugin=mysql_native_password
+             --sql_mode="" --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: repo
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - back_net
+
+  repo:
+    build:
+      context: repository
+      dockerfile: Dockerfile
+    image: repo
+    container_name: repo
+    depends_on:
+      - nats
+      - mysql
+    networks:
+      - back_net
+      - managment
+
+  worker1:
+    build:
+      context: worker
+      dockerfile: Dockerfile
+    image: worker
+    container_name: worker1
+    depends_on:
+      - repo
+    networks:
+      - back_net
+      - managment
+
+  worker2:
+    build:
+      context: worker
+      dockerfile: Dockerfile
+    image: worker
+    container_name: worker2
+    depends_on:
+      - repo
+    networks:
+      - back_net
+      - managment
+
+  apiserver:
+    build:
+      context: apiserver
+      dockerfile: Dockerfile
+    image: apiserver
+    container_name: apiserver
+    depends_on:
+      - repo
+    ports:
+      - '8081:8081'
+    networks:
+      - front_net
+      - back_net
+      - managment
+
+  ui:
+    build:
+      context: ui
+      dockerfile: Dockerfile
+    image: ui
+    depends_on:
+      - apiserver
+    ports:
+      - '80:80'
+    networks:
+      - front_net
+      - managment
+
+  nats:
+    container_name: nats
+    image: nats:1.4.1
+    networks:
+      - back_net
+
+#managment
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.6.2
+    environment:
+      - discovery.type=single-node
+    networks:
+      - managment
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:6.6.2
+    depends_on:
+      - elasticsearch
+    ports:
+      - '5601:5601'
+    networks:
+      - managment
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:6.6.2
+    depends_on:
+      - elasticsearch
+    volumes:
+      - '/home/docker-user/elk/logstash/pipeline/:/usr/share/logstash/pipeline/'
+    networks:
+      - managment
+
+  filebeat:
+    container_name: filebeat
+    image: docker.elastic.co/beats/filebeat:6.6.2
+    depends_on:
+      - logstash
+    user: root
+    volumes:
+      - '/home/docker-user/elk/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro'
+      - '/var/lib/docker/containers:/var/lib/docker/containers:ro'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+    command:
+      - '-e'
+      - '-strict.perms=false'
+    networks:
+      - managment
+
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - '16686:16686'
+    networks:
+      - managment
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    volumes:
+      - '/home/docker-user/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml'
+      - '/home/docker-user/prometheus/alert.rules:/etc/prometheus/alert.rules'
+      - prometheus_data:/prometheus
+    networks:
+      - managment
+    ports:
+      - '9090:9090'
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    depends_on:
+      - prometheus
+    volumes:
+      - '/home/docker-user/prometheus/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml'
+      - '/home/docker-user/prometheus/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml'
+      - '/home/docker-user/prometheus/grafana/dashboards:/var/lib/grafana/dashboards'
+      - grafana_data:/var/lib/grafana
+    ports:
+      - '3000:3000'
+    networks:
+      managment:
+        aliases:
+          - grafana
+
+  alertmanager:
+    container_name: alertmanager
+    image: prom/alertmanager
+    depends_on:
+      - prometheus
+    volumes:
+      - '/home/docker-user/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml'
+    networks:
+      - managment
+    ports:
+      - '9093:9093'
+
+  cadvisor:
+    container_name: cadvisor
+    image: google/cadvisor:latest
+    volumes:
+      - '/:/rootfs:ro'
+      - '/var/run:/var/run:ro'
+      - '/sys:/sys:ro'
+      - '/var/lib/docker/:/var/lib/docker:ro'
+      - '/dev/disk/:/dev/disk:ro'
+    networks:
+      managment:
+        aliases:
+          - cadvisor
+    ports:
+      - '8080:8080'
+
+  node-exporter:
+    container_name: node-exporter
+    image: quay.io/prometheus/node-exporter
+    volumes:
+      - '/proc:/host/proc:ro'
+      - '/sys:/host/sys:ro'
+      - '/:/rootfs:ro'
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+    networks:
+      managment:
+        aliases:
+          - node-exporter
+    ports:
+      - '9100:9100'
+
+networks:
+  front_net:
+  back_net:
+  managment:
+
+volumes:
+  mysql_data:
+  prometheus_data:
+  grafana_data:

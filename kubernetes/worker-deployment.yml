@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: worker
+  labels:
+    app: transaction
+    component: worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: transaction
+      component: worker
+  template:
+    metadata:
+      name: worker
+      labels:
+        app: transaction
+        component: worker
+    spec:
+      containers:
+      - image: docker_hub_user/worker:app_version
+        name: worker

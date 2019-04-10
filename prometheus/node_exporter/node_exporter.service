@@ -1,0 +1,13 @@
+[Unit]
+Description=node_explorer
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory==/usr/sbin/node_exporter
+ExecStart=/usr/sbin/node_exporter/node_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

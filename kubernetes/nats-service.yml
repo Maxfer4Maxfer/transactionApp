@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nats
+  labels:
+    app: transaction
+    component: nats
+spec:
+  ports:
+  - port: 4222
+    protocol: TCP
+    targetPort: 4222
+  selector:
+    app: transaction
+    component: nats

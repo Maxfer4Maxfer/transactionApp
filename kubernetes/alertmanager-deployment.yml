@@ -1,0 +1,33 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: alertmanager
+  labels:
+    app: transaction
+    component: alertmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction
+      component: alertmanager
+  template:
+    metadata:
+      name: alertmanager
+      labels:
+        app: transaction
+        component: alertmanager
+    spec:
+      containers:
+      - image: prom/alertmanager
+        name: alertmanager
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/alertmanager/alertmanager.yml
+          readOnly: true
+          subPath: alertmanager.yml
+      volumes:
+      - name: config-volume
+        configMap:
+          name: alertmanager-cfgmap

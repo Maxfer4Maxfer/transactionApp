@@ -1,0 +1,65 @@
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: cadvisor
+  labels:
+    app: transaction
+    component: cadvisor
+spec:
+  template:
+    metadata:
+      name: cadvisor
+      labels:
+        app: transaction
+        component: cadvisor
+    spec:
+      containers:
+      - image: google/cadvisor:latest
+        name: cadvisor
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "0.05"
+          limits:
+            memory: "256Mi"
+            cpu: "0.1"
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: rootfs
+          mountPath: /rootfs
+        - name: varrun
+          mountPath: /var/run
+        - name: sys
+          mountPath: /sys
+        - name: varlibdocker
+          mountPath: /var/lib/docker
+        - name: devdisk
+          mountPath: /dev/disk
+        - name: devkmsg
+          mountPath: /dev/kmsg
+        - name: varrundockersock
+          mountPath: /var/run/docker.sock
+      volumes:
+      - name: rootfs
+        hostPath:
+          path: /
+      - name: varrun
+        hostPath:
+          path: /var/run
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: varlibdocker
+        hostPath:
+          path: /var/lib/docker
+      - name: devdisk
+        hostPath:
+          path: /dev/disk
+      - name: devkmsg
+        hostPath:
+          path: /dev/kmsg
+      - name:  varrundockersock
+        hostPath:
+          path: /var/run/docker.sock

@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: logstash
+  labels:
+    app: transaction
+    component: logstash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction
+      component: logstash
+  template:
+    metadata:
+      name: logstash
+      labels:
+        app: transaction
+        component: logstash
+    spec:
+      containers:
+      - image: docker.elastic.co/logstash/logstash:6.6.2
+        name: logstash
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/share/logstash/pipeline/
+      volumes:
+      - name: config-volume
+        configMap:
+          name: logstash-cfgmap
