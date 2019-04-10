@@ -2,7 +2,7 @@
 
 ### Prerequsite
 A machine where **Transaction App** will be deployed should already has infrastructure servises runned.
-For simplisity you can run all of these services in canteiner using [Docker deploy](https://github.com/Maxfer4Maxfer/transaction_app/blob/master/docs/pics/Diagrams-Overview.jpg) instruction.
+For simplisity you can run all of these services in canteiner using [Docker deploy](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/docker-deploy.md) instruction.
 
 ### Clone the git repository 
 ```bash

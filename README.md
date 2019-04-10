@@ -3,11 +3,11 @@
 It is written on Go programming language. 
 It demonstrate how to build microservice that exposes its operation over over all three major transports: GRPC, REST API, Messaging System (NATS). It also shows how to do logging and distributed tracing to external systems and expose application metrics for external monitoring. 
 
-**Transaction App** can be deployed on a single docker host or on a Kubernetes cluster. See [Deploy](https://github.com/Maxfer4Maxfer/transaction_app/blob/master/README.md#deploy) section.
+**Transaction App** can be deployed on a single docker host or on a Kubernetes cluster. See [Deploy](https://github.com/Maxfer4Maxfer/transactionApp#deploy) section.
 
 **Transaction App** is a simple application. From user interface you can only run one or batch of new jobs. Application desided on which worker the new job should be runned. The more jobs started the slower they are performed. Application shows you progress of each jobs and displays information of already completed jobs. 
 
-![Transaction App Overview Diagram](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/pics/Diagrams-Overview.jpg)
+![Transaction App Overview Diagram](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/Diagrams-Overview.jpg)
 
 ## Technology stack
 Programming Languages:
@@ -47,19 +47,19 @@ There are three options for deploying **Transaction App**
 ## Components specification
 ui
 
-![ui](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/pics/Diagrams-ui.jpg)
+![ui](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/Diagrams-ui.jpg)
 
 apiserver
 
-![appserver](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/pics/Diagrams-apiserver.jpg)
+![appserver](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/Diagrams-apiserver.jpg)
 
 repository
 
-![repository](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/pics/Diagrams-repository.jpg)
+![repository](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/Diagrams-repository.jpg)
 
 worker
 
-![worker](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/pics/Diagrams-worker.jpg)
+![worker](https://github.com/Maxfer4Maxfer/transactionApp/blob/master/docs/Diagrams-worker.jpg)
 
 
 ## Donations
