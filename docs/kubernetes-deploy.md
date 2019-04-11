@@ -45,6 +45,9 @@ sed -i.bu 's/docker_hub_user/'$DOCKER_HUB_USER'/g' ./repo-deployment.yml
 sed -i.bu 's/app_version/'$APP_VERSION'/g' ./repo-deployment.yml
 sed -i.bu 's/docker_hub_user/'$DOCKER_HUB_USER'/g' ./worker-deployment.yml
 sed -i.bu 's/app_version/'$APP_VERSION'/g' ./worker-deployment.yml
+rm apiserver-deployment.yml.bu
+rm repo-deployment.yml.bu
+rm worker-deployment.yml.bu
 ```
 
 ### Create configmaps
