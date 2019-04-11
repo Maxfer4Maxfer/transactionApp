@@ -48,53 +48,9 @@ scrape_configs:
       replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
 
 
-  - job_name: 'docker_hosts_node_exporter'
-    scheme: http
-    metrics_path: :9100/metrics
-
-    tls_config:
-      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-
-    kubernetes_sd_configs:
-    - role: node
-    relabel_configs:
-    - action: labelmap
-      regex: __meta_kubernetes_node_label_(.+)
-
-
-  #Application metrics
-  - job_name: 'repo'
+  - job_name: 'node_exporter'
     scrape_interval: 1s
-    static_configs:
-      - targets: ['repo:8080']
-
-  - job_name: 'worker'
-    scrape_interval: 1s
-    static_configs:
-      - targets: ['worker:8080']
-
-
-  - job_name: 'worker1'
-    scrape_interval: 1s
-    metrics_path: :8080/metrics
-    scheme: http   
-
-    kubernetes_sd_configs:
-    - role: service
-
-    relabel_configs:
-    - source_labels: [__meta_kubernetes_service_name]
-      regex: worker
-      action: keep
-    - source_labels: [__meta_kubernetes_service_port_name]
-      regex: port-8080
-      action: keep
-
-
-  - job_name: 'worker2'
-    scrape_interval: 1s
-    metrics_path: :8080/metrics
+    metrics_path: /metrics
     scheme: http   
 
     kubernetes_sd_configs:
@@ -102,6 +58,37 @@ scrape_configs:
 
     relabel_configs:
     - source_labels: [__meta_kubernetes_pod_label_component]
+      regex: node-exporter
+      action: keep
+    - source_labels: [__meta_kubernetes_pod_ip]
+      regex:  '(.*)'            
+      target_label: __address__
+      replacement: '${1}:9100'
+
+
+  #Application metrics
+  - job_name: 'apiserver'
+    scrape_interval: 1s
+    static_configs:
+      - targets: ['apiserver:8080']
+
+  - job_name: 'repo'
+    scrape_interval: 1s
+    static_configs:
+      - targets: ['repo:8080']
+
+  - job_name: 'worker'
+    scrape_interval: 1s
+    metrics_path: /metrics
+    scheme: http   
+
+    kubernetes_sd_configs:
+    - role: endpoints
+
+    relabel_configs:
+    - source_labels: [__meta_kubernetes_service_name]
       regex: worker
       action: keep
-
+    - source_labels: [__meta_kubernetes_endpoint_port_name]
+      regex: port-8080
+      action: keep

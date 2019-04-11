@@ -6,6 +6,10 @@ metadata:
   labels:
     app: transaction
     component: worker
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "9100"
 spec:
   replicas: 2
   selector:

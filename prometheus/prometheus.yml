@@ -38,6 +38,11 @@ scrape_configs:
       - targets: ['node-exporter:9100']
 
   #Application metrics
+  - job_name: 'apiserver'
+    scrape_interval: 1s
+    static_configs:
+      - targets: ['apiserver:8080']
+
   - job_name: 'repo'
     scrape_interval: 1s
     static_configs:

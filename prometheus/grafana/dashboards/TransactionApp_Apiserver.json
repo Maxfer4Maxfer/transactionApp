@@ -9,15 +9,6 @@
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
         "type": "dashboard"
-      },
-      {
-        "builtIn": 2,
-        "datasource": "-- Grafana --",
-        "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
-        "type": "dashboard"
       }
     ]
   },
@@ -64,10 +55,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(transactionApp_worker_request_duration_seconds[5m])) by (method, instance)",
+          "expr": "sum(rate(transactionApp_apiserver_request_duration_seconds[5m])) by (method)",
           "format": "time_series",
           "hide": false,
-          "interval": "",
           "intervalFactor": 1,
           "refId": "A"
         }
@@ -76,7 +66,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Worker Method Duration",
+      "title": "API Server Method Duration",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -121,12 +111,12 @@
       "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 12,
         "y": 0
       },
-      "id": 8,
+      "id": 16,
       "legend": {
         "avg": false,
         "current": false,
@@ -142,7 +132,7 @@
       "nullPointMode": "null",
       "paceLength": 10,
       "percentage": false,
-      "pointradius": 5,
+      "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
@@ -151,7 +141,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(transactionApp_worker_ping_called[5m]) ",
+          "expr": "rate(transactionApp_apiserver_new_jobs[1m])  ",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -162,7 +152,92 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Worker Ping Called",
+      "title": "New Jobs created",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "prometheus",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 10,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "paceLength": 10,
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "rate(transactionApp_apiserver_getallnodes_called[5m])",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "API Server GetAllNodes Called",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -237,9 +312,8 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(transactionApp_worker_request_duration_seconds_sum) by (instance, method)",
+          "expr": "sum(transactionApp_apiserver_request_duration_seconds_sum) by (method)",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
           "refId": "A"
         }
@@ -248,100 +322,12 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Worker Total Method Duration time",
+      "title": "API Server Total Method Duration time",
       "tooltip": {
         "shared": true,
         "sort": 0,
         "value_type": "individual"
       },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "prometheus",
-      "description": "All HTTP request that the UI service receives",
-      "fill": 1,
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 9
-      },
-      "id": 2,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "null",
-      "paceLength": 10,
-      "percentage": false,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "rate(transactionApp_worker_getjobs_called[5m]) ",
-          "format": "time_series",
-          "hide": false,
-          "intervalFactor": 1,
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "GetAllJobs Called",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transparent": true,
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -411,7 +397,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(transactionApp_worker_request_duration_seconds_count[5m])) by (instance, method) ",
+          "expr": "sum(rate(transactionApp_apiserver_request_duration_seconds_count[5m])) by (method) ",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -421,94 +407,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Worker Method Call Count",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "prometheus",
-      "fill": 1,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 18
-      },
-      "id": 10,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "null",
-      "paceLength": 10,
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "rate(transactionApp_worker_newjobs_runned[5m])",
-          "format": "time_series",
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "count of New Job created",
+      "title": "API Server Method Call Count",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -546,7 +445,7 @@
       }
     }
   ],
-  "refresh": "5s",
+  "refresh": false,
   "schemaVersion": 18,
   "style": "dark",
   "tags": [],
@@ -583,7 +482,7 @@
     ]
   },
   "timezone": "",
-  "title": "Transaction App - Worker",
-  "uid": "f7kbUgbmZ",
+  "title": "Transaction App - API Server",
+  "uid": "f8kbUgbmz",
   "version": 1
 }

@@ -142,8 +142,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(transactionApp_repository_nodes_registered[5m]) ",
+          "expr": "transactionApp_repository_nodes_registered",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 1,
           "refId": "A"
         }
@@ -222,6 +223,7 @@
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
@@ -279,15 +281,14 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "prometheus",
-      "description": "",
       "fill": 1,
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 12,
         "y": 9
       },
-      "id": 2,
+      "id": 16,
       "legend": {
         "avg": false,
         "current": false,
@@ -303,7 +304,7 @@
       "nullPointMode": "null",
       "paceLength": 10,
       "percentage": false,
-      "pointradius": 5,
+      "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
@@ -312,9 +313,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(transactionApp_repository_findfree_called[5m]) ",
+          "expr": "rate(transactionApp_repository_new_jobs[1m])  ",
           "format": "time_series",
-          "hide": false,
+          "interval": "",
           "intervalFactor": 1,
           "refId": "A"
         }
@@ -323,13 +324,12 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "FindFree Called",
+      "title": "New Jobs created",
       "tooltip": {
         "shared": true,
         "sort": 0,
         "value_type": "individual"
       },
-      "transparent": true,
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -394,6 +394,7 @@
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
@@ -450,96 +451,13 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "fill": 1,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 18
-      },
-      "id": 16,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "null",
-      "paceLength": 10,
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "rate(transactionApp_worker_newjobs_runned[5m])  ",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "New Jobs created",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 26
+        "y": 17
       },
       "id": 10,
       "legend": {
@@ -561,6 +479,7 @@
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
+      "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
@@ -621,7 +540,7 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {
