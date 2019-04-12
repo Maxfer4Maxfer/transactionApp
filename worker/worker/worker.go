@@ -165,15 +165,12 @@ func (w *Worker) registerItself() error {
 					// creating a structure for parsing a responce
 					var resp struct {
 						String string `json:"str"`
-						Error  string `json:"error"`
 						Err    string `json:"err"`
 					}
 					// encoding the response
 					switch err = json.Unmarshal(r.Data, &resp); {
 					case err != nil:
 						w.logger.Log("method", "registerItself", "action", "Unmarshal a RegisterNode responce", "err", err)
-					case resp.Error != "":
-						w.logger.Log("method", "registerItself", "action", "Something wrong on the repository site", "err", resp.Error)
 					case resp.Err != "":
 						w.logger.Log("method", "registerItself", "action", "Something wrong on the repository site", "err", resp.Err)
 					default:

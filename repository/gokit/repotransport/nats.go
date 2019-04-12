@@ -48,7 +48,7 @@ func decodeNATSRegisterNodeRequest(_ context.Context, m *nats.Msg) (interface{},
 }
 
 type errorWrapper struct {
-	Error string `json:"error"`
+	Error string `json:"err"`
 }
 
 // EncodeJSONResponse is a EncodeResponseFunc that serializes the response as a
