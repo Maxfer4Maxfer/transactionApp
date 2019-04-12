@@ -930,8 +930,8 @@
     ]
   },
   "time": {
-    "from": "2019-04-11T13:57:43.161Z",
-    "to": "2019-04-11T14:09:38.788Z"
+    "from": "now-1h",
+    "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [

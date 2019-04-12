@@ -28,6 +28,11 @@ cd ./worker
 go run main.go --debug-addr=:8280 --extIP=127.0.0.1 --extPort=:8282 --grpc-addr=:8282 --jaeger-addr=localhost:5775
 go run main.go --debug-addr=:8380 --extIP=127.0.0.1 --extPort=:8382 --grpc-addr=:8382 --jaeger-addr=localhost:5775
 go run main.go --debug-addr=:8480 --extIP=127.0.0.1 --extPort=:8482 --grpc-addr=:8482 --jaeger-addr=localhost:5775
+go run main.go --debug-addr=:8580 --extIP=127.0.0.1 --extPort=:8582 --grpc-addr=:8582 --jaeger-addr=localhost:5775
+go run main.go --debug-addr=:8680 --extIP=127.0.0.1 --extPort=:8682 --grpc-addr=:8682 --jaeger-addr=localhost:5775
+go run main.go --debug-addr=:8780 --extIP=127.0.0.1 --extPort=:8782 --grpc-addr=:8782 --jaeger-addr=localhost:5775
+go run main.go --debug-addr=:8880 --extIP=127.0.0.1 --extPort=:8882 --grpc-addr=:8882 --jaeger-addr=localhost:5775
+go run main.go --debug-addr=:8980 --extIP=127.0.0.1 --extPort=:8982 --grpc-addr=:8982 --jaeger-addr=localhost:5775
 ```
 
 ### ui
