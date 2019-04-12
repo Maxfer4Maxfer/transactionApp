@@ -168,7 +168,6 @@ func (w *Worker) registerItself() error {
 						Error  string `json:"error"`
 						Err    string `json:"err"`
 					}
-					fmt.Println("r.Data = ", string(r.Data))
 					// encoding the response
 					switch err = json.Unmarshal(r.Data, &resp); {
 					case err != nil:
