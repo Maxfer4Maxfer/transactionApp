@@ -54,19 +54,24 @@ TRANSACTION_APP_IP=123.123.123.123 #Change to the vm1's IP address
 sed -i.bu 's/localhost/'$TRANSACTION_APP_IP'/g' ./ui/src/App.js
 ```
 
+### Build go vendor folders and ui output scripts
+```bash
+cd apiserver; go mod vendor; cd ..;
+cd repository; go mod vendor; cd ..;
+cd worker; go mod vendor; cd ..;
+cd ui; npm install && npm run build; cd ..;
+```
+
 ### Copy configs and source files to the docker machine
 ```bash
 docker-machine ssh vm1 "sudo rm -fR ~/*"
 docker-machine scp -r $(pwd)/prometheus vm1:~
 docker-machine scp -r $(pwd)/elk vm1:~
+rm -fR ui/node_modules
+docker-machine scp -r $(pwd)/ui vm1:~
+docker-machine scp -r $(pwd)/apiserver vm1:~
 docker-machine scp -r $(pwd)/repository vm1:~
 docker-machine scp -r $(pwd)/worker vm1:~
-```
-
-### Build user interface
-```bash
-cd ui
-npm run build
 ```
 
 ### Run docker-compose

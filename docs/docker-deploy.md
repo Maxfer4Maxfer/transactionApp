@@ -11,6 +11,14 @@ git clone https://github.com/Maxfer4Maxfer/TransactionApp.git
 cd ./TransactionApp
 ```
 
+### Build go vendor folders and ui output scripts
+```bash
+cd apiserver; go mod vendor; cd ..;
+cd repository; go mod vendor; cd ..;
+cd worker; go mod vendor; cd ..;
+cd ui; npm install && npm run build; cd ..;
+```
+
 ### NATS
 ```bash
 docker run -d --name nats --network=app_net --network-alias=nats -p 4222:4222 -p 6222:6222 -p 8222:8222 nats

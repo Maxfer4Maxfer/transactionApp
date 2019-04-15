@@ -10,6 +10,14 @@ git clone https://github.com/Maxfer4Maxfer/TransactionApp.git
 cd ./TransactionApp
 ```
 
+### Build go vendor folders and ui output scripts
+```bash
+cd apiserver; go mod vendor; cd ..;
+cd repository; go mod vendor; cd ..;
+cd worker; go mod vendor; cd ..;
+cd ui; npm run build; cd ..;
+```
+
 ### apiserver
 ```bash
 cd ./apiserver
@@ -38,6 +46,6 @@ go run main.go --debug-addr=:8980 --extIP=127.0.0.1 --extPort=:8982 --grpc-addr=
 ### ui
 ```bash
 cd ./ui
-npm start
+npm install && npm start
 ```
 

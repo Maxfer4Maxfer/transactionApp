@@ -9,8 +9,13 @@ metadata:
 spec:
   ports:
   - port: 16686
+    name: port-16686
     protocol: TCP
     targetPort: 16686
+  - port: 5775
+    name: port-5775
+    protocol: TCP
+    targetPort: 5775
   selector:
     app: transaction
     component: jaeger

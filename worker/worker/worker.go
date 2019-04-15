@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	tickerPerion          = 1000 * time.Millisecond //update frequency
+	tickerPeriod          = 1000 * time.Millisecond //update frequency
 	idealTime             = 4 * time.Second         // idial time for perform one job
-	idealMgz              = 4000                    // Mgz count for perform one job in IDEALTIME
+	idealMgz              = 4800                    // Mgz count for perform one job in IDEALTIME
 	idealMgzForOnePercent = idealMgz / 100
 )
 
@@ -47,6 +47,9 @@ func New(name string, IP string, port string, natsAddr string, logger log.Logger
 		fl, _ := strconv.ParseFloat(mn[len(mn)-7:len(mn)-3], 32)
 		tCPUMhz = tCPUMhz + c.Cores*int32(fl*1000)
 	}
+
+	// for simplicity and not to bother yourself take tCPUMhz as idealMgz
+	tCPUMhz = idealMgz
 
 	logger.Log("worker", "New", "tCPUMhz", tCPUMhz)
 
@@ -109,7 +112,7 @@ func (w *Worker) GetJobs() []Job {
 }
 
 func (w *Worker) updateJobsStatus() {
-	ticker := time.NewTicker(tickerPerion)
+	ticker := time.NewTicker(tickerPeriod)
 	defer ticker.Stop()
 
 	for {
@@ -117,8 +120,8 @@ func (w *Worker) updateJobsStatus() {
 		case <-ticker.C:
 			for _, j := range w.jobs {
 				if j.Per < 100 {
-					mgzForJob := int(w.tCPUMhz) / w.activeJobsLen() // number of Mgz for performing currnt job
-					j.Per = j.Per + (float32(tickerPerion)/float32(idealTime))*(float32(mgzForJob)/float32(idealMgzForOnePercent))
+					mgzForJob := int(w.tCPUMhz) / w.activeJobsLen() // number of Mgz for performing current job
+					j.Per = j.Per + (float32(tickerPeriod)/float32(idealTime))*(float32(mgzForJob)/float32(idealMgzForOnePercent))
 					j.Duration = time.Since(j.StartTime)
 					if j.Per >= 100 {
 						j.Finish()

@@ -12,15 +12,19 @@ git clone https://github.com/Maxfer4Maxfer/TransactionApp.git
 cd ./TransactionApp
 ```
 
+### Build go vendor folders and ui output scripts
+```bash
+cd apiserver; go mod vendor; cd ..;
+cd repository; go mod vendor; cd ..;
+cd worker; go mod vendor; cd ..;
+cd ui; npm install && npm run build; cd ..;
+```
+
 ### Docker images
 Build docker images and upload them two the [Docker Hub](https://hub.docker.com):
 ```bash
-DOCKER_HUB_USER=<YOUR_DOCKER_HUB_ACCOUNT>
-APP_VERSION=<APP_VERSION>
-### Build user interface
-cd ui
-npm run build
-cd ..
+DOCKER_HUB_USER=maxim1maxim
+APP_VERSION=1.4
 
 docker build -t $DOCKER_HUB_USER/ui:$APP_VERSION ./ui
 docker build -t $DOCKER_HUB_USER/apiserver:$APP_VERSION ./apiserver
@@ -36,8 +40,8 @@ docker push $DOCKER_HUB_USER/worker:$APP_VERSION
 ### Docker images
 Make changes in kubernetes yaml files:
 ```bash
-DOCKER_HUB_USER=<YOUR_DOCKER_HUB_ACCOUNT>
-APP_VERSION=<APP_VERSION>
+DOCKER_HUB_USER=maxim1maxim
+APP_VERSION=1.4
 cd ./kubernetes
 sed -i.bu 's/docker_hub_user/'$DOCKER_HUB_USER'/g' ./apiserver-deployment.yml
 sed -i.bu 's/app_version/'$APP_VERSION'/g' ./apiserver-deployment.yml
