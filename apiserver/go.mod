@@ -7,7 +7,7 @@ require (
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/oklog/oklog v0.3.2
 	github.com/opentracing/opentracing-go v1.1.0
-	github.com/prometheus/client_golang v0.9.2
+	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
 	github.com/sony/gobreaker v0.0.0-20190329013020-a9b2a3fc7395
 	github.com/uber/jaeger-client-go v2.16.0+incompatible
 	github.com/uber/jaeger-lib v2.0.0+incompatible // indirect
