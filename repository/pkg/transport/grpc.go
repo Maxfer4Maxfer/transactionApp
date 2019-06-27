@@ -1,4 +1,4 @@
-package repotransport
+package transport
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	timestamp "github.com/golang/protobuf/ptypes"
 
 	"github.com/go-kit/kit/circuitbreaker"
-	"github.com/go-kit/kit/endpoint"
+	kitendpoint "github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/tracing/opentracing"
 	"github.com/google/uuid"
@@ -22,10 +22,10 @@ import (
 
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 
-	"repository/gokit/repoendpoint"
-	"repository/gokit/reposervice"
+	"repository/pkg/endpoint"
+	"repository/pkg/service"
 	pb "repository/pb"
-	"repository/repo"
+	repo "repository/pkg/model"
 )
 
 type grpcServer struct {
@@ -35,7 +35,7 @@ type grpcServer struct {
 }
 
 // NewGRPCServer makes a set of endpoints available as a gRPC AddServer.
-func NewGRPCServer(endpoints repoendpoint.EndpointSet, otTracer stdopentracing.Tracer, logger log.Logger) pb.RepoServer {
+func NewGRPCServer(endpoints endpoint.EndpointSet, otTracer stdopentracing.Tracer, logger log.Logger) pb.RepoServer {
 
 	options := []grpctransport.ServerOption{
 		grpctransport.ServerErrorLogger(logger),
@@ -90,7 +90,7 @@ func (s *grpcServer) NewJob(ctx context.Context, req *pb.NewJobRequest) (*pb.New
 // of the conn. The caller is responsible for constructing the conn, and
 // eventually closing the underlying transport. We bake-in certain middlewares,
 // implementing the client library pattern.
-func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger log.Logger) reposervice.Service {
+func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger log.Logger) service.Service {
 	// We construct a single ratelimiter middleware, to limit the total outgoing
 	// QPS from this client to all methods on the remote instance. We also
 	// construct per-endpoint circuitbreaker middlewares to demonstrate how
@@ -102,10 +102,10 @@ func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger
 	options := []grpctransport.ClientOption{}
 
 	// Each individual endpoint is an grpc/transport.Client (which implements
-	// endpoint.Endpoint) that gets wrapped with various middlewares. If you
+	// kitendpoint.Endpoint) that gets wrapped with various middlewares. If you
 	// made your own client library, you'd do this work there, so your server
 	// could rely on a consistent set of client behavior.
-	var registerNodeEndpoint endpoint.Endpoint
+	var registerNodeEndpoint kitendpoint.Endpoint
 	{
 		registerNodeEndpoint = grpctransport.NewClient(
 			conn,
@@ -124,7 +124,7 @@ func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger
 		}))(registerNodeEndpoint)
 	}
 
-	var getAllNodesEndpoint endpoint.Endpoint
+	var getAllNodesEndpoint kitendpoint.Endpoint
 	{
 		getAllNodesEndpoint = grpctransport.NewClient(
 			conn,
@@ -143,7 +143,7 @@ func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger
 		}))(getAllNodesEndpoint)
 	}
 
-	var newJobEndpoint endpoint.Endpoint
+	var newJobEndpoint kitendpoint.Endpoint
 	{
 		newJobEndpoint = grpctransport.NewClient(
 			conn,
@@ -165,7 +165,7 @@ func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger
 	// Returning the endpoint.EndpointSet as a service.Service relies on the
 	// endpoint.EndpointSet implementing the Service methods. That's just a simple bit
 	// of glue code.
-	return repoendpoint.EndpointSet{
+	return endpoint.EndpointSet{
 		RegisterNodeEndpoint: registerNodeEndpoint,
 		GetAllNodesEndpoint:  getAllNodesEndpoint,
 		NewJobEndpoint:       newJobEndpoint,
@@ -197,7 +197,7 @@ func err2str(err error) string {
 // encodeGRPCRegisterNodeRequest is a transport/grpc.EncodeRequestFunc that converts a
 // user-domain RegisterNode request to a gRPC RegisterNode request. Primarily useful in a client.
 func encodeGRPCRegisterNodeRequest(_ context.Context, request interface{}) (interface{}, error) {
-	req := request.(repoendpoint.RegisterNodeRequest)
+	req := request.(endpoint.RegisterNodeRequest)
 	return &pb.RegisterNodeRequest{Name: req.Name, NodeIP: req.IP, NodePort: req.Port}, nil
 }
 
@@ -205,13 +205,13 @@ func encodeGRPCRegisterNodeRequest(_ context.Context, request interface{}) (inte
 // gRPC RegisterNode request to a user-domain RegisterNode request. Primarily useful in a server.
 func decodeGRPCRegisterNodeRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb.RegisterNodeRequest)
-	return repoendpoint.RegisterNodeRequest{Name: req.Name, IP: req.NodeIP, Port: req.NodePort}, nil
+	return endpoint.RegisterNodeRequest{Name: req.Name, IP: req.NodeIP, Port: req.NodePort}, nil
 }
 
 // encodeGRPCRegisterNodeResponse is a transport/grpc.EncodeResponseFunc that converts a
 // user-domain RegisterNode response to a gRPC RegisterNode reply. Primarily useful in a server.
 func encodeGRPCRegisterNodeResponse(_ context.Context, response interface{}) (interface{}, error) {
-	resp := response.(repoendpoint.RegisterNodeResponse)
+	resp := response.(endpoint.RegisterNodeResponse)
 	return &pb.RegisterNodeReply{NodeID: resp.ID, Err: err2str(resp.Err)}, nil
 }
 
@@ -219,7 +219,7 @@ func encodeGRPCRegisterNodeResponse(_ context.Context, response interface{}) (in
 // gRPC RegisterNode reply to a user-domain RegisterNode response. Primarily useful in a client.
 func decodeGRPCRegisterNodeResponse(_ context.Context, grpcReply interface{}) (interface{}, error) {
 	reply := grpcReply.(*pb.RegisterNodeReply)
-	return repoendpoint.RegisterNodeResponse{ID: reply.NodeID, Err: str2err(reply.Err)}, nil
+	return endpoint.RegisterNodeResponse{ID: reply.NodeID, Err: str2err(reply.Err)}, nil
 }
 
 // ********** GetAllNodes **********
@@ -227,7 +227,7 @@ func decodeGRPCRegisterNodeResponse(_ context.Context, grpcReply interface{}) (i
 // encodeGRPCGetAllNodesRequest is a transport/grpc.EncodeRequestFunc that converts a
 // user-domain GetAllNodes request to a gRPC GetAllNodes request. Primarily useful in a client.
 func encodeGRPCGetAllNodesRequest(_ context.Context, request interface{}) (interface{}, error) {
-	// req := request.(repoendpoint.GetAllNodesRequest)
+	// req := request.(endpoint.GetAllNodesRequest)
 	return &pb.GetAllNodesRequest{}, nil
 }
 
@@ -235,13 +235,13 @@ func encodeGRPCGetAllNodesRequest(_ context.Context, request interface{}) (inter
 // gRPC GetAllNodes request to a user-domain GetAllNodes request. Primarily useful in a server.
 func decodeGRPCGetAllNodesRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	// req := grpcReq.(*pb.GetAllNodesRequest)
-	return repoendpoint.GetAllNodesRequest{}, nil
+	return endpoint.GetAllNodesRequest{}, nil
 }
 
 // encodeGRPCGetAllNodesResponse is a transport/grpc.EncodeResponseFunc that converts a
 // user-domain GetAllNodes response to a gRPC GetAllNodes reply. Primarily useful in a server.
 func encodeGRPCGetAllNodesResponse(_ context.Context, response interface{}) (interface{}, error) {
-	resp := response.(repoendpoint.GetAllNodesResponse)
+	resp := response.(endpoint.GetAllNodesResponse)
 
 	// conver []repo.Node to []*pb.Node
 	pbNodes := make([]*pb.Node, 0)
@@ -312,7 +312,7 @@ func decodeGRPCGetAllNodesResponse(_ context.Context, grpcReply interface{}) (in
 		nodes = append(nodes, node)
 	}
 
-	return repoendpoint.GetAllNodesResponse{Nodes: nodes, Err: str2err(reply.Err)}, nil
+	return endpoint.GetAllNodesResponse{Nodes: nodes, Err: str2err(reply.Err)}, nil
 }
 
 // ********** NewJob **********
@@ -320,7 +320,7 @@ func decodeGRPCGetAllNodesResponse(_ context.Context, grpcReply interface{}) (in
 // encodeGRPCNewJobRequest is a transport/grpc.EncodeRequestFunc that converts a
 // user-domain NewJob request to a gRPC NewJob request. Primarily useful in a client.
 func encodeGRPCNewJobRequest(_ context.Context, request interface{}) (interface{}, error) {
-	// req := request.(repoendpoint.NewJobRequest)
+	// req := request.(endpoint.NewJobRequest)
 	return &pb.NewJobRequest{}, nil
 }
 
@@ -328,13 +328,13 @@ func encodeGRPCNewJobRequest(_ context.Context, request interface{}) (interface{
 // gRPC NewJob request to a user-domain NewJob request. Primarily useful in a server.
 func decodeGRPCNewJobRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	// req := grpcReq.(*pb.NewJobRequest)
-	return repoendpoint.NewJobRequest{}, nil
+	return endpoint.NewJobRequest{}, nil
 }
 
 // encodeGRPCNewJobResponse is a transport/grpc.EncodeResponseFunc that converts a
 // user-domain NewJob response to a gRPC NewJob reply. Primarily useful in a server.
 func encodeGRPCNewJobResponse(_ context.Context, response interface{}) (interface{}, error) {
-	resp := response.(repoendpoint.NewJobResponse)
+	resp := response.(endpoint.NewJobResponse)
 	return &pb.NewJobReply{ID: resp.ID, Err: err2str(resp.Err)}, nil
 }
 
@@ -342,5 +342,5 @@ func encodeGRPCNewJobResponse(_ context.Context, response interface{}) (interfac
 // gRPC NewJob reply to a user-domain NewJob response. Primarily useful in a client.
 func decodeGRPCNewJobResponse(_ context.Context, grpcReply interface{}) (interface{}, error) {
 	reply := grpcReply.(*pb.NewJobReply)
-	return repoendpoint.NewJobResponse{ID: reply.ID, Err: str2err(reply.Err)}, nil
+	return endpoint.NewJobResponse{ID: reply.ID, Err: str2err(reply.Err)}, nil
 }

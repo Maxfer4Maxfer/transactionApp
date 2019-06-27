@@ -1,14 +1,16 @@
 package gorm
 
 import (
-	"repository/repo"
 	"time"
-
+	
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/go-kit/kit/log"
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
+	
+	repo "repository/pkg/model"
+	"repository/pkg/service"
 )
 
 // Node represents an executer instance machine
@@ -99,7 +101,7 @@ func (ns *NodeStorage) NewNode(n repo.Node) (repo.NodeID, error) {
 		ns.DB.Create(&node)
 		return repo.NodeID{id}, nil
 	} else {
-		return repo.NodeID{}, repo.ErrRepoUnevailable
+		return repo.NodeID{}, service.ErrRepoUnevailable
 	}
 }
 func (ns *NodeStorage) SaveNode(n repo.Node) error {

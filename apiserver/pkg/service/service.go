@@ -10,7 +10,7 @@ import (
 	stdopentracing "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 
-	"repository/repo"
+	repo "repository/pkg/model"
 	"repository/gokit/repotransport"
 
 )

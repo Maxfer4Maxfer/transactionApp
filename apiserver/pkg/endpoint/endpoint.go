@@ -16,7 +16,7 @@ import (
 	"golang.org/x/time/rate"
 
 	"apiserver/pkg/service"
-	"repository/repo"
+	repo "repository/pkg/model"
 )
 
 // EndpointSet collects all of the endpoints that compose a apiserver service. It's meant to

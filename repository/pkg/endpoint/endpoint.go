@@ -1,4 +1,4 @@
-package repoendpoint
+package endpoint
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	stdopentracing "github.com/opentracing/opentracing-go"
 
 	"github.com/go-kit/kit/circuitbreaker"
-	"github.com/go-kit/kit/endpoint"
+	kitendpoint "github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics"
 	"github.com/go-kit/kit/ratelimit"
@@ -15,23 +15,23 @@ import (
 	"github.com/sony/gobreaker"
 	"golang.org/x/time/rate"
 
-	"repository/gokit/reposervice"
-	"repository/repo"
+	"repository/pkg/service"
+	repo "repository/pkg/model"
 )
 
 // EndpointSet collects all of the endpoints that compose a repo service. It's meant to
 // be used as a helper struct, to collect all of the endpoints into a single
 // parameter.
 type EndpointSet struct {
-	RegisterNodeEndpoint endpoint.Endpoint
-	GetAllNodesEndpoint  endpoint.Endpoint
-	NewJobEndpoint       endpoint.Endpoint
+	RegisterNodeEndpoint kitendpoint.Endpoint
+	GetAllNodesEndpoint  kitendpoint.Endpoint
+	NewJobEndpoint       kitendpoint.Endpoint
 }
 
 // New returns a Set that wraps the provided server, and wires in all of the
 // expected endpoint middlewares via the various parameters.
-func New(svc reposervice.Service, logger log.Logger, duration metrics.Histogram, otTracer stdopentracing.Tracer) EndpointSet {
-	var registerNodeEndpoint endpoint.Endpoint
+func New(svc service.Service, logger log.Logger, duration metrics.Histogram, otTracer stdopentracing.Tracer) EndpointSet {
+	var registerNodeEndpoint kitendpoint.Endpoint
 	{
 		registerNodeEndpoint = MakeRegisterNodeEndpoint(svc)
 		registerNodeEndpoint = ratelimit.NewErroringLimiter(rate.NewLimiter(rate.Every(time.Millisecond), 1))(registerNodeEndpoint)
@@ -41,7 +41,7 @@ func New(svc reposervice.Service, logger log.Logger, duration metrics.Histogram,
 		registerNodeEndpoint = InstrumentingMiddleware(duration.With("method", "RegisterNode"))(registerNodeEndpoint)
 	}
 
-	var getAllNodesEndpoint endpoint.Endpoint
+	var getAllNodesEndpoint kitendpoint.Endpoint
 	{
 		getAllNodesEndpoint = MakeGetAllNodesEndpoint(svc)
 		getAllNodesEndpoint = ratelimit.NewErroringLimiter(rate.NewLimiter(rate.Every(time.Millisecond), 1))(getAllNodesEndpoint)
@@ -51,7 +51,7 @@ func New(svc reposervice.Service, logger log.Logger, duration metrics.Histogram,
 		getAllNodesEndpoint = InstrumentingMiddleware(duration.With("method", "GetAllNodes"))(getAllNodesEndpoint)
 	}
 
-	var newJobEndpoint endpoint.Endpoint
+	var newJobEndpoint kitendpoint.Endpoint
 	{
 		newJobEndpoint = MakeNewJobEndpoint(svc)
 		newJobEndpoint = ratelimit.NewErroringLimiter(rate.NewLimiter(rate.Every(time.Millisecond), 1))(newJobEndpoint)
@@ -93,7 +93,7 @@ type RegisterNodeResponse struct {
 }
 
 // MakeRegisterNodeEndpoint constructs a Sum endpoint wrapping the service.
-func MakeRegisterNodeEndpoint(s reposervice.Service) endpoint.Endpoint {
+func MakeRegisterNodeEndpoint(s service.Service) kitendpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(RegisterNodeRequest)
 		ID, err := s.RegisterNode(ctx, req.Name, req.IP, req.Port)
@@ -125,7 +125,7 @@ type GetAllNodesResponse struct {
 }
 
 // MakeGetAllNodesEndpoint constructs a Sum endpoint wrapping the service.
-func MakeGetAllNodesEndpoint(s reposervice.Service) endpoint.Endpoint {
+func MakeGetAllNodesEndpoint(s service.Service) kitendpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		// req := request.(GetAllNodesRequest)
 		nodes, err := s.GetAllNodes(ctx)
@@ -157,7 +157,7 @@ type NewJobResponse struct {
 }
 
 // MakeNewJobEndpoint constructs a Sum endpoint wrapping the service.
-func MakeNewJobEndpoint(s reposervice.Service) endpoint.Endpoint {
+func MakeNewJobEndpoint(s service.Service) kitendpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		// req := request.(NewJobRequest)
 		id, err := s.NewJob(ctx)

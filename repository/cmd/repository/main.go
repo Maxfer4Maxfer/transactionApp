@@ -25,12 +25,11 @@ import (
 	"github.com/go-kit/kit/metrics/prometheus"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 
-	"repository/gokit/repoendpoint"
-	"repository/gokit/reposervice"
-	"repository/gokit/repotransport"
-	store "repository/gorm"
+	"repository/pkg/endpoint"
+	"repository/pkg/service"
+	"repository/pkg/transport"
+	store "repository/pkg/storage/gorm"
 	repopb "repository/pb"
-	"repository/repo"
 )
 
 func main() {
@@ -39,7 +38,7 @@ func main() {
 		debugAddr = fs.String("debug-addr", ":8080", "Debug and metrics listen address")
 		grpcAddr  = fs.String("grpc-addr", ":8082", "gRPC listen address")
 		natsAddr  = fs.String("nats-addr", nats.DefaultURL, "NATS server address")
-		dsn       = fs.String("dsn", "root:root@tcp(mysql:3306)/repo?charset=utf8&parseTime=True&loc=Local", "Database Source Name")
+		dsn       = fs.String("dsn", "root:root@tcp(localhost:3306)/cache?charset=utf8&parseTime=True&loc=Local", "Database Source Name")
 		jaegerURL = fs.String("jaeger-addr", "jaeger:5775", "Jaeger server address")
 	)
 
@@ -123,15 +122,14 @@ func main() {
 	// them to ports or anything yet; we'll do that next.
 	var (
 		storage, sCloser = store.New(*dsn, logger)
-		repo             = repo.New(storage, logger)
-		service          = reposervice.New(repo, logger, registerNodes, getAllNodes, newJobs)
-		endpoints        = repoendpoint.New(service, logger, duration, tracer)
-		natsSubscribers  = repotransport.NewNATSSubscribers(endpoints, tracer, logger)
-		grpcServer       = repotransport.NewGRPCServer(endpoints, tracer, logger)
+		service          = service.New(storage, logger, registerNodes, getAllNodes, newJobs)
+		endpoints        = endpoint.New(service, logger, duration, tracer)
+		natsSubscribers  = transport.NewNATSSubscribers(endpoints, tracer, logger)
+		grpcServer       = transport.NewGRPCServer(endpoints, tracer, logger)
 	)
 	defer sCloser()
 
-	natsCloser := repotransport.NewNATSHandler(*natsAddr, natsSubscribers, logger)
+	natsCloser := transport.NewNATSHandler(*natsAddr, natsSubscribers, logger)
 	defer natsCloser()
 
 	// Now we're to the part of the func main where we want to start actually
@@ -179,15 +177,6 @@ func main() {
 			return baseServer.Serve(grpcListener)
 		}, func(error) {
 			grpcListener.Close()
-		})
-	}
-	{
-		// Start checking nodes in a repository.
-		checkNodesClose := make(chan struct{}, 1)
-		g.Add(func() error {
-			return repo.CheckNodes(checkNodesClose)
-		}, func(error) {
-			checkNodesClose <- struct{}{}
 		})
 	}
 	{

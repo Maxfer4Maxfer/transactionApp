@@ -1,4 +1,4 @@
-package repo
+package model
 
 import (
 	"time"
@@ -6,13 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Storage stores nodes
-type Storage interface {
-	NewNode(n Node) (NodeID, error)
-	SaveNode(n Node) error
-	GetAllNodes() ([]Node, error)
-	DeleteNode(NodeID)
-}
 
 // Node represents an executer instance machine
 type Node struct {

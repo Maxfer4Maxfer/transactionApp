@@ -1,29 +1,51 @@
-package repo
+package service
 
 import (
 	"context"
 	"errors"
 	"time"
 
-	"worker/gokit/workertransport"
-
+	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/metrics"
 	stdopentracing "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
-
-	"github.com/go-kit/kit/log"
 	"github.com/google/uuid"
+
+	"worker/gokit/workertransport"
+	"repository/pkg/model"
 )
 
-// Repo implements Repo interface
-type Repo struct {
-	s      Storage
-	logger log.Logger
+// Service describes a service that represents repository.
+type Service interface {
+	RegisterNode(ctx context.Context, name string, IP string, port string) (string, error)
+	GetAllNodes(ctx context.Context) ([]model.Node, error)
+	NewJob(ctx context.Context) (string, error)
 }
 
-// New create new repository of nodes which stored in object behind the Storage interface
-func New(s Storage, logger log.Logger) Repo {
-	r := Repo{s, logger}
-	return r
+// Storage stores nodes
+type Storage interface {
+	NewNode(n model.Node) (model.NodeID, error)
+	SaveNode(n model.Node) error
+	GetAllNodes() ([]model.Node, error)
+	DeleteNode(model.NodeID)
+}
+
+// New returns a basic Service with all of the expected middlewares wired in.
+func New(s Storage, logger log.Logger, registerNodes, getAllNodes, newJobs metrics.Counter) Service {
+	
+	repo := Repo{s, logger}
+
+	var svc Service
+	{
+		svc = LoggingMiddleware(logger)(repo)
+		svc = InstrumentingMiddleware(registerNodes, getAllNodes, newJobs)(svc)
+	}
+
+	// Start checking nodes in a repository.
+	checkNodesClose := make(chan struct{}, 1)
+	go repo.CheckNodes(checkNodesClose)
+
+	return svc
 }
 
 var (
@@ -37,10 +59,15 @@ var (
 	ErrEmptyRepo = errors.New("empty repository")
 )
 
-func (r *Repo) RegisterNode(name string, IP string, port string) (string, error) {
-	// TODO: Validate input parameters
+// Repo implements Service interface
+type Repo struct {
+	s      Storage
+	logger log.Logger
+}
 
-	node := Node{
+
+func (r Repo) RegisterNode(ctx context.Context, name string, IP string, port string) (string, error) {
+	node := model.Node{
 		Name: name,
 		IP:   IP,
 		Port: port,
@@ -50,12 +77,12 @@ func (r *Repo) RegisterNode(name string, IP string, port string) (string, error)
 	return id.String(), err
 }
 
-func (r *Repo) GetAllNodes() ([]Node, error) {
+func (r Repo) GetAllNodes(ctx context.Context) ([]model.Node, error) {
 	return r.s.GetAllNodes()
 }
 
 // FindFree returns a node with with low jobs running level
-func (r *Repo) FindFree() (string, string, string, string, error) {
+func (r Repo) FindFree(ctx context.Context) ( string, string, string, string, error) {
 	nodes, err := r.s.GetAllNodes()
 	if err != nil {
 		return "", "", "", "", err
@@ -80,13 +107,13 @@ func (r *Repo) FindFree() (string, string, string, string, error) {
 }
 
 // NewJob starts new job on a free node
-func (r *Repo) NewJob() (string, error) {
+func (r Repo) NewJob(ctx context.Context) (string, error) {
 	// id, name, IP, port, err := r.FindFree()
-	id, name, IP, port, err := r.FindFree()
+	id, name, IP, port, err := r.FindFree(ctx)
 	r.logger.Log("method", "NewJob", "connecting to ", id+" "+name)
 
 	grpcAddr := IP + port
-	ctx, close := context.WithTimeout(context.Background(), time.Second)
+	ctx, close := context.WithTimeout(ctx, time.Second)
 	defer close()
 	conn, err := grpc.DialContext(ctx, grpcAddr, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
@@ -97,7 +124,7 @@ func (r *Repo) NewJob() (string, error) {
 	otTracer := stdopentracing.GlobalTracer() // no-op
 	svc := workertransport.NewGRPCClient(conn, otTracer, r.logger)
 
-	jID, err := svc.NewJob(context.Background())
+	jID, err := svc.NewJob(ctx)
 	r.logger.Log("method", "NewJob", "job ID", jID)
 
 	return jID, err
@@ -105,7 +132,7 @@ func (r *Repo) NewJob() (string, error) {
 
 // CheckNodes starts checking each node in the repository and save current number of running jobs
 // checkNodesClose is a channel that should be close for stopping checking proccess.
-func (r *Repo) CheckNodes(checkNodesClose chan struct{}) error {
+func (r Repo) CheckNodes(checkNodesClose chan struct{}) error {
 	ticker := time.NewTicker(1 * time.Second)
 	go func() {
 		for range ticker.C {
@@ -126,7 +153,7 @@ func (r *Repo) CheckNodes(checkNodesClose chan struct{}) error {
 					otTracer := stdopentracing.GlobalTracer() // no-op
 					svc := workertransport.NewGRPCClient(conn, otTracer, r.logger)
 
-					jobsCount, err := svc.Ping(context.Background())
+					jobsCount, err := svc.Ping(ctx)
 					if err != nil {
 						r.logger.Log("method", "CheckNodes", "err", err)
 						r.s.DeleteNode(n.ID)
@@ -137,16 +164,16 @@ func (r *Repo) CheckNodes(checkNodesClose chan struct{}) error {
 						n.JobsCount = jobsCount
 						r.s.SaveNode(n)
 					}
-					jobs, err := svc.GetJobs(context.Background())
+					jobs, err := svc.GetJobs(ctx)
 					if err != nil {
 						r.logger.Log("method", "CheckNodes", "err", err)
 					} else {
 						r.logger.Log("method", "CheckNodes", "jobs", len(jobs))
-						js := make([]Job, 0)
+						js := make([]model.Job, 0)
 						for _, j := range jobs {
 							id, _ := uuid.Parse(j.ID.String())
-							job := Job{
-								ID:         JobID{id},
+							job := model.Job{
+								ID:         model.JobID{id},
 								Per:        j.Per,
 								Duration:   float32(j.Duration.Seconds()),
 								StartTime:  j.StartTime,

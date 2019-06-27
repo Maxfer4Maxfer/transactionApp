@@ -1,8 +1,8 @@
-package reposervice
+package service
 
 import (
 	"context"
-	"repository/repo"
+	repo "repository/pkg/model"
 
 	"github.com/go-kit/kit/metrics"
 )

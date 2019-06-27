@@ -5,3 +5,4 @@ repository/vendor
 worker/vendor
 .DS_Store
 *.log
+.vscode

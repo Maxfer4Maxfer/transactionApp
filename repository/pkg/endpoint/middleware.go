@@ -1,4 +1,4 @@
-package repoendpoint
+package endpoint
 
 import (
 	"context"

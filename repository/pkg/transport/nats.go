@@ -1,4 +1,4 @@
-package repotransport
+package transport
 
 import (
 	"bytes"
@@ -12,14 +12,14 @@ import (
 	"github.com/go-kit/kit/log"
 	natstransport "github.com/go-kit/kit/transport/nats"
 
-	"repository/gokit/repoendpoint"
+	"repository/pkg/endpoint"
 )
 
 type NATSSubscribers map[string]*natstransport.Subscriber
 
 // NewNATSSubscribers returns an NATS subscribers that makes a set of endpoints
 // available on predefined paths.
-func NewNATSSubscribers(endpoint repoendpoint.EndpointSet, otTracer stdopentracing.Tracer, logger log.Logger) NATSSubscribers {
+func NewNATSSubscribers(endpoint endpoint.EndpointSet, otTracer stdopentracing.Tracer, logger log.Logger) NATSSubscribers {
 
 	var subscribers NATSSubscribers = make(map[string]*natstransport.Subscriber)
 
@@ -41,7 +41,7 @@ func NewNATSSubscribers(endpoint repoendpoint.EndpointSet, otTracer stdopentraci
 // JSON-encoded sum request from the NATS request body. Primarily useful in a
 // server.
 func decodeNATSRegisterNodeRequest(_ context.Context, m *nats.Msg) (interface{}, error) {
-	var req repoendpoint.RegisterNodeRequest
+	var req endpoint.RegisterNodeRequest
 	r := bytes.NewReader(m.Data)
 	err := json.NewDecoder(r).Decode(&req)
 	return req, err
@@ -57,7 +57,7 @@ type errorWrapper struct {
 func EncodeJSONResponse(_ context.Context, reply string, nc *nats.Conn, response interface{}) error {
 	var err error
 	var b []byte
-	resp := response.(repoendpoint.RegisterNodeResponse)
+	resp := response.(endpoint.RegisterNodeResponse)
 
 	if resp.Err != nil {
 		b, err = json.Marshal(errorWrapper{Error: resp.Err.Error()})

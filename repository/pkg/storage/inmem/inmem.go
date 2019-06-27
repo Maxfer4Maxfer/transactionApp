@@ -1,7 +1,7 @@
 package inmem
 
 import (
-	"repository/repo"
+	repo "repository/pkg/model"
 	"sync"
 
 	"github.com/google/uuid"
