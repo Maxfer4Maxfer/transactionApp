@@ -1,4 +1,4 @@
-package apiservertransport
+package transport
 
 import (
 	"bytes"
@@ -10,18 +10,18 @@ import (
 
 	stdopentracing "github.com/opentracing/opentracing-go"
 
-	"github.com/go-kit/kit/endpoint"
+	kitendpoint "github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/tracing/opentracing"
 	httptransport "github.com/go-kit/kit/transport/http"
 
-	"apiserver/gokit/apiserverendpoint"
-	"apiserver/gokit/apiserverservice"
+	"apiserver/pkg/endpoint"
+	"apiserver/pkg/service"
 )
 
 // NewHTTPHandler returns an HTTP handler that makes a set of endpoints
 // available on predefined paths.
-func NewHTTPHandler(endpoints apiserverendpoint.EndpointSet, otTracer stdopentracing.Tracer, logger log.Logger) http.Handler {
+func NewHTTPHandler(endpoints endpoint.EndpointSet, otTracer stdopentracing.Tracer, logger log.Logger) http.Handler {
 
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorEncoder(errorEncoder),
@@ -65,7 +65,7 @@ func errorEncoder(_ context.Context, err error, w http.ResponseWriter) {
 
 func err2code(err error) int {
 	switch err {
-	case apiserverservice.ErrAPIServerUnevailable:
+	case service.ErrAPIServerUnevailable:
 		return http.StatusBadRequest
 	}
 	return http.StatusInternalServerError
@@ -97,7 +97,7 @@ func encodeHTTPGenericRequest(_ context.Context, r *http.Request, request interf
 // encodeHTTPGenericResponse is a transport/http.EncodeResponseFunc that encodes
 // the response as JSON to the response writer. Primarily useful in a server.
 func encodeHTTPGenericResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
-	if f, ok := response.(endpoint.Failer); ok && f.Failed() != nil {
+	if f, ok := response.(kitendpoint.Failer); ok && f.Failed() != nil {
 		errorEncoder(ctx, f.Failed(), w)
 		return nil
 	}
@@ -111,7 +111,7 @@ func encodeHTTPGenericResponse(ctx context.Context, w http.ResponseWriter, respo
 // JSON-encoded GetAllNodes request from the HTTP request body. Primarily useful in a
 // server.
 func decodeHTTPGetAllNodesRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var req apiserverendpoint.GetAllNodesRequest
+	var req endpoint.GetAllNodesRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	return req, err
 }
@@ -125,7 +125,7 @@ func decodeHTTPGetAllNodesResponse(_ context.Context, r *http.Response) (interfa
 	if r.StatusCode != http.StatusOK {
 		return nil, errors.New(r.Status)
 	}
-	var resp apiserverendpoint.GetAllNodesResponse
+	var resp endpoint.GetAllNodesResponse
 	err := json.NewDecoder(r.Body).Decode(&resp)
 	return resp, err
 }
@@ -136,7 +136,7 @@ func decodeHTTPGetAllNodesResponse(_ context.Context, r *http.Response) (interfa
 // JSON-encoded NewJob request from the HTTP request body. Primarily useful in a
 // server.
 func decodeHTTPNewJobRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var req apiserverendpoint.NewJobRequest
+	var req endpoint.NewJobRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	return req, err
 }
@@ -150,7 +150,7 @@ func decodeHTTPNewJobResponse(_ context.Context, r *http.Response) (interface{},
 	if r.StatusCode != http.StatusOK {
 		return nil, errors.New(r.Status)
 	}
-	var resp apiserverendpoint.NewJobResponse
+	var resp endpoint.NewJobResponse
 	err := json.NewDecoder(r.Body).Decode(&resp)
 	return resp, err
 }

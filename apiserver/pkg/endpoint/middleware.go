@@ -1,4 +1,4 @@
-package apiserverendpoint
+package endpoint
 
 import (
 	"context"

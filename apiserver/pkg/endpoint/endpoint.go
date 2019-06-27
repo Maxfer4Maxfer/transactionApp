@@ -1,4 +1,4 @@
-package apiserverendpoint
+package endpoint
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	"github.com/sony/gobreaker"
 	"golang.org/x/time/rate"
 
-	"apiserver/gokit/apiserverservice"
+	"apiserver/pkg/service"
 	"repository/repo"
 )
 
@@ -29,7 +29,7 @@ type EndpointSet struct {
 
 // New returns a Set that wraps the provided server, and wires in all of the
 // expected endpoint middlewares via the various parameters.
-func New(svc apiserverservice.Service, logger log.Logger, duration metrics.Histogram, otTracer stdopentracing.Tracer) EndpointSet {
+func New(svc service.Service, logger log.Logger, duration metrics.Histogram, otTracer stdopentracing.Tracer) EndpointSet {
 
 	var getAllNodesEndpoint endpoint.Endpoint
 	{
@@ -81,7 +81,7 @@ type GetAllNodesResponse struct {
 }
 
 // MakeGetAllNodesEndpoint constructs a Sum endpoint wrapping the service.
-func MakeGetAllNodesEndpoint(s apiserverservice.Service) endpoint.Endpoint {
+func MakeGetAllNodesEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		// req := request.(GetAllNodesRequest)
 		nodes, err := s.GetAllNodes(ctx)
@@ -113,7 +113,7 @@ type NewJobResponse struct {
 }
 
 // MakeNewJobEndpoint constructs a Sum endpoint wrapping the service.
-func MakeNewJobEndpoint(s apiserverservice.Service) endpoint.Endpoint {
+func MakeNewJobEndpoint(s service.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		// req := request.(NewJobRequest)
 		id, err := s.NewJob(ctx)

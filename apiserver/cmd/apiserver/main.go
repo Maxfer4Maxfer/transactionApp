@@ -21,10 +21,9 @@ import (
 	"github.com/go-kit/kit/metrics"
 	"github.com/go-kit/kit/metrics/prometheus"
 
-	"apiserver/apiserver"
-	"apiserver/gokit/apiserverendpoint"
-	"apiserver/gokit/apiserverservice"
-	"apiserver/gokit/apiservertransport"
+	"apiserver/pkg/endpoint"
+	"apiserver/pkg/service"
+	"apiserver/pkg/transport"
 )
 
 func main() {
@@ -109,10 +108,9 @@ func main() {
 	// the interfaces that the transports expect. Note that we're not binding
 	// them to ports or anything yet; we'll do that next.
 	var (
-		apiserver   = apiserver.New(*repoIP, *repoPort, logger)
-		service     = apiserverservice.New(apiserver, logger, getAllNodes, newJobs)
-		endpoints   = apiserverendpoint.New(service, logger, duration, tracer)
-		httpHandler = apiservertransport.NewHTTPHandler(endpoints, tracer, logger)
+		service     = service.New(*repoIP, *repoPort, logger, getAllNodes, newJobs)
+		endpoints   = endpoint.New(service, logger, duration, tracer)
+		httpHandler = transport.NewHTTPHandler(endpoints, tracer, logger)
 	)
 
 	// Now we're to the part of the func main where we want to start actually
