@@ -6,8 +6,8 @@ In this deployment [Docker Machine](https://docs.docker.com/machine) and [Google
 
 Set up environment variables:
 ```bash
-GOOGLE_PROJECT=docker-28092018    
-GOOGLE_ZONE=europe-west1-b
+GOOGLE_PROJECT=<GCP_PROJECT>
+GOOGLE_ZONE=<GCP_ZONE>
 ```
 Create a virtual machine in GCP
 ```bash
@@ -60,18 +60,14 @@ cd apiserver; go mod vendor; cd ..;
 cd repository; go mod vendor; cd ..;
 cd worker; go mod vendor; cd ..;
 cd ui; npm install && npm run build; cd ..;
+rm -fR ui/node_modules
 ```
 
 ### Copy configs and source files to the docker machine
 ```bash
 docker-machine ssh vm1 "sudo rm -fR ~/*"
-docker-machine scp -r $(pwd)/prometheus vm1:~
-docker-machine scp -r $(pwd)/elk vm1:~
-rm -fR ui/node_modules
-docker-machine scp -r $(pwd)/ui vm1:~
-docker-machine scp -r $(pwd)/apiserver vm1:~
-docker-machine scp -r $(pwd)/repository vm1:~
-docker-machine scp -r $(pwd)/worker vm1:~
+docker-machine scp -r $(pwd) vm1:~
+docker-machine ssh vm1 "sudo mv ~/transactionApp*/* ~/"
 ```
 
 ### Run docker-compose

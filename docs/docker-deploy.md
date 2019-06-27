@@ -11,9 +11,13 @@ git clone https://github.com/Maxfer4Maxfer/TransactionApp.git
 cd ./TransactionApp
 ```
 
-### Build ui output scripts
+### Build go vendor folders and ui output scripts
 ```bash
+cd apiserver; go mod vendor; cd ..;
+cd repository; go mod vendor; cd ..;
+cd worker; go mod vendor; cd ..;
 cd ui; npm install && npm run build; cd ..;
+rm -fR ui/node_modules
 ```
 
 ### NATS
