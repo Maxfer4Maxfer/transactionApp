@@ -38,7 +38,7 @@ func main() {
 		debugAddr = fs.String("debug-addr", ":8080", "Debug and metrics listen address")
 		grpcAddr  = fs.String("grpc-addr", ":8082", "gRPC listen address")
 		natsAddr  = fs.String("nats-addr", nats.DefaultURL, "NATS server address")
-		dsn       = fs.String("dsn", "root:root@tcp(localhost:3306)/cache?charset=utf8&parseTime=True&loc=Local", "Database Source Name")
+		dsn       = fs.String("dsn", "root:root@tcp(mysql:3306)/repo?charset=utf8&parseTime=True&loc=Local", "Database Source Name")
 		jaegerURL = fs.String("jaeger-addr", "jaeger:5775", "Jaeger server address")
 	)
 
