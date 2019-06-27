@@ -1,4 +1,4 @@
-package worker
+package service
 
 import (
 	"encoding/json"
@@ -7,10 +7,13 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	"context"
 
 	"github.com/go-kit/kit/log"
 	"github.com/nats-io/go-nats"
 	"github.com/shirou/gopsutil/cpu"
+
+	"worker/pkg/model"
 )
 
 const (
@@ -23,7 +26,7 @@ const (
 // Worker implements Repo interface
 type Worker struct {
 	mtx      sync.RWMutex
-	jobs     map[JobID]*Job
+	jobs     map[model.JobID]*model.Job
 	stop     chan struct{}
 	name     string
 	IP       string
@@ -36,8 +39,8 @@ type Worker struct {
 	tCPUMhz  int32
 }
 
-// New create new repository of nodes which stored in object behind the Storage interface
-func New(name string, IP string, port string, natsAddr string, logger log.Logger) Worker {
+// NewWorker create new repository of nodes which stored in object behind the Storage interface
+func NewWorker(name string, IP string, port string, natsAddr string, logger log.Logger) Worker {
 
 	is, _ := cpu.Info()
 
@@ -54,7 +57,7 @@ func New(name string, IP string, port string, natsAddr string, logger log.Logger
 	logger.Log("worker", "New", "tCPUMhz", tCPUMhz)
 
 	w := Worker{
-		jobs:     make(map[JobID]*Job),
+		jobs:     make(map[model.JobID]*model.Job),
 		stop:     make(chan struct{}),
 		name:     name,
 		IP:       IP,
@@ -85,33 +88,33 @@ func (w *Worker) Stop() {
 	w.stop <- struct{}{}
 }
 
-func (w *Worker) Ping() (int, error) {
+func (w Worker) Ping(ctx context.Context) (int, error) {
 	return w.activeJobsLen(), nil
 }
 
-func (w *Worker) NewJob() (ID JobID) {
+func (w Worker) NewJob(ctx context.Context) (string, error) {
 
-	job := NewJob()
+	job := model.NewJob()
 
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 
 	w.jobs[job.ID] = job
 
-	return job.ID
+	return job.ID.String(), nil
 }
 
-func (w *Worker) GetJobs() []Job {
+func (w Worker) GetJobs(ctx context.Context) ([]model.Job, error) {
 	w.mtx.RLock()
 	defer w.mtx.RUnlock()
-	jobs := make([]Job, 0)
+	jobs := make([]model.Job, 0)
 	for _, j := range w.jobs {
 		jobs = append(jobs, *j)
 	}
-	return jobs
+	return jobs, nil
 }
 
-func (w *Worker) updateJobsStatus() {
+func (w Worker) updateJobsStatus() {
 	ticker := time.NewTicker(tickerPeriod)
 	defer ticker.Stop()
 

@@ -1,4 +1,4 @@
-package workertransport
+package transport
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	timestamp "github.com/golang/protobuf/ptypes"
 
 	"github.com/go-kit/kit/circuitbreaker"
-	"github.com/go-kit/kit/endpoint"
+	kitendpoint "github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/tracing/opentracing"
 	"github.com/google/uuid"
@@ -23,10 +23,10 @@ import (
 
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 
-	"worker/gokit/workerendpoint"
-	"worker/gokit/workerservice"
+	"worker/pkg/endpoint"
+	"worker/pkg/service"
+	worker "worker/pkg/model"
 	pb "worker/pb"
-	"worker/worker"
 )
 
 type grpcServer struct {
@@ -36,7 +36,7 @@ type grpcServer struct {
 }
 
 // NewGRPCServer makes a set of endpoints available as a gRPC AddServer.
-func NewGRPCServer(endpoints workerendpoint.EndpointSet, otTracer stdopentracing.Tracer, logger log.Logger) pb.WorkerServer {
+func NewGRPCServer(endpoints endpoint.EndpointSet, otTracer stdopentracing.Tracer, logger log.Logger) pb.WorkerServer {
 
 	options := []grpctransport.ServerOption{
 		grpctransport.ServerErrorLogger(logger),
@@ -92,7 +92,7 @@ func (s *grpcServer) NewJob(ctx context.Context, req *pb.NewJobRequest) (*pb.New
 // of the conn. The caller is responsible for constructing the conn, and
 // eventually closing the underlying transport. We bake-in certain middlewares,
 // implementing the client library pattern.
-func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger log.Logger) workerservice.Service {
+func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger log.Logger) service.Service {
 	// We construct a single ratelimiter middleware, to limit the total outgoing
 	// QPS from this client to all methods on the remote instance. We also
 	// construct per-endpoint circuitbreaker middlewares to demonstrate how
@@ -107,7 +107,7 @@ func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger
 	// endpoint.Endpoint) that gets wrapped with various middlewares. If you
 	// made your own client library, you'd do this work there, so your server
 	// could rely on a consistent set of client behavior.
-	var pingEndpoint endpoint.Endpoint
+	var pingEndpoint kitendpoint.Endpoint
 	{
 		pingEndpoint = grpctransport.NewClient(
 			conn,
@@ -126,7 +126,7 @@ func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger
 		}))(pingEndpoint)
 	}
 
-	var getJobsEndpoint endpoint.Endpoint
+	var getJobsEndpoint kitendpoint.Endpoint
 	{
 		getJobsEndpoint = grpctransport.NewClient(
 			conn,
@@ -145,7 +145,7 @@ func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger
 		}))(getJobsEndpoint)
 	}
 
-	var newJobEndpoint endpoint.Endpoint
+	var newJobEndpoint kitendpoint.Endpoint
 	{
 		newJobEndpoint = grpctransport.NewClient(
 			conn,
@@ -167,7 +167,7 @@ func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, logger
 	// Returning the endpoint.EndpointSet as a service.Service relies on the
 	// endpoint.EndpointSet implementing the Service methods. That's just a simple bit
 	// of glue code.
-	return workerendpoint.EndpointSet{
+	return endpoint.EndpointSet{
 		PingEndpoint:    pingEndpoint,
 		GetJobsEndpoint: getJobsEndpoint,
 		NewJobEndpoint:  newJobEndpoint,
@@ -197,7 +197,7 @@ func err2str(err error) string {
 // encodeGRPCPingRequest is a transport/grpc.EncodeRequestFunc that converts a
 // user-domain Ping request to a gRPC Ping request. Primarily useful in a client.
 func encodeGRPCPingRequest(_ context.Context, request interface{}) (interface{}, error) {
-	// req := request.(workerendpoint.PingRequest)
+	// req := request.(endpoint.PingRequest)
 	return &pb.PingRequest{}, nil
 }
 
@@ -205,13 +205,13 @@ func encodeGRPCPingRequest(_ context.Context, request interface{}) (interface{},
 // gRPC Ping request to a user-domain Ping request. Primarily useful in a server.
 func decodeGRPCPingRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	// req := grpcReq.(*pb.PingRequest)
-	return workerendpoint.PingRequest{}, nil
+	return endpoint.PingRequest{}, nil
 }
 
 // encodeGRPCPingResponse is a transport/grpc.EncodeResponseFunc that converts a
 // user-domain Ping response to a gRPC Ping reply. Primarily useful in a server.
 func encodeGRPCPingResponse(_ context.Context, response interface{}) (interface{}, error) {
-	resp := response.(workerendpoint.PingResponse)
+	resp := response.(endpoint.PingResponse)
 	return &pb.PingReply{Jobs: int32(resp.JobsCount), Err: err2str(resp.Err)}, nil
 }
 
@@ -219,7 +219,7 @@ func encodeGRPCPingResponse(_ context.Context, response interface{}) (interface{
 // gRPC Ping reply to a user-domain Ping response. Primarily useful in a client.
 func decodeGRPCPingResponse(_ context.Context, grpcReply interface{}) (interface{}, error) {
 	reply := grpcReply.(*pb.PingReply)
-	return workerendpoint.PingResponse{JobsCount: int(reply.Jobs), Err: str2err(reply.Err)}, nil
+	return endpoint.PingResponse{JobsCount: int(reply.Jobs), Err: str2err(reply.Err)}, nil
 }
 
 // ********** GetJobs **********
@@ -227,7 +227,7 @@ func decodeGRPCPingResponse(_ context.Context, grpcReply interface{}) (interface
 // encodeGRPCGetJobsRequest is a transport/grpc.EncodeRequestFunc that converts a
 // user-domain GetJobs request to a gRPC GetJobs request. Primarily useful in a client.
 func encodeGRPCGetJobsRequest(_ context.Context, request interface{}) (interface{}, error) {
-	// req := request.(workerendpoint.GetJobsRequest)
+	// req := request.(endpoint.GetJobsRequest)
 	return &pb.GetJobsRequest{}, nil
 }
 
@@ -235,13 +235,13 @@ func encodeGRPCGetJobsRequest(_ context.Context, request interface{}) (interface
 // gRPC GetJobs request to a user-domain GetJobs request. Primarily useful in a server.
 func decodeGRPCGetJobsRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	// req := grpcReq.(*pb.GetJobsRequest)
-	return workerendpoint.GetJobsRequest{}, nil
+	return endpoint.GetJobsRequest{}, nil
 }
 
 // encodeGRPCGetJobsResponse is a transport/grpc.EncodeResponseFunc that converts a
 // user-domain GetJobs response to a gRPC GetJobs reply. Primarily useful in a server.
 func encodeGRPCGetJobsResponse(_ context.Context, response interface{}) (interface{}, error) {
-	resp := response.(workerendpoint.GetJobsResponse)
+	resp := response.(endpoint.GetJobsResponse)
 
 	// conver []worker.Job to []*pb.Job
 	pbJobs := make([]*pb.Job, 0)
@@ -282,7 +282,7 @@ func decodeGRPCGetJobsResponse(_ context.Context, grpcReply interface{}) (interf
 		jobs = append(jobs, job)
 	}
 
-	return workerendpoint.GetJobsResponse{Jobs: jobs, Err: str2err(reply.Err)}, nil
+	return endpoint.GetJobsResponse{Jobs: jobs, Err: str2err(reply.Err)}, nil
 }
 
 // ********** NewJob **********
@@ -290,7 +290,7 @@ func decodeGRPCGetJobsResponse(_ context.Context, grpcReply interface{}) (interf
 // encodeGRPCNewJobRequest is a transport/grpc.EncodeRequestFunc that converts a
 // user-domain NewJob request to a gRPC NewJob request. Primarily useful in a client.
 func encodeGRPCNewJobRequest(_ context.Context, request interface{}) (interface{}, error) {
-	// req := request.(workerendpoint.NewJobRequest)
+	// req := request.(endpoint.NewJobRequest)
 	return &pb.NewJobRequest{}, nil
 }
 
@@ -298,13 +298,13 @@ func encodeGRPCNewJobRequest(_ context.Context, request interface{}) (interface{
 // gRPC NewJob request to a user-domain NewJob request. Primarily useful in a server.
 func decodeGRPCNewJobRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	// req := grpcReq.(*pb.NewJobRequest)
-	return workerendpoint.NewJobRequest{}, nil
+	return endpoint.NewJobRequest{}, nil
 }
 
 // encodeGRPCNewJobResponse is a transport/grpc.EncodeResponseFunc that converts a
 // user-domain NewJob response to a gRPC NewJob reply. Primarily useful in a server.
 func encodeGRPCNewJobResponse(_ context.Context, response interface{}) (interface{}, error) {
-	resp := response.(workerendpoint.NewJobResponse)
+	resp := response.(endpoint.NewJobResponse)
 	return &pb.NewJobReply{Id: resp.ID, Err: err2str(resp.Err)}, nil
 }
 
@@ -312,5 +312,5 @@ func encodeGRPCNewJobResponse(_ context.Context, response interface{}) (interfac
 // gRPC NewJob reply to a user-domain NewJob response. Primarily useful in a client.
 func decodeGRPCNewJobResponse(_ context.Context, grpcReply interface{}) (interface{}, error) {
 	reply := grpcReply.(*pb.NewJobReply)
-	return workerendpoint.NewJobResponse{ID: reply.Id, Err: str2err(reply.Err)}, nil
+	return endpoint.NewJobResponse{ID: reply.Id, Err: str2err(reply.Err)}, nil
 }

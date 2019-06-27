@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"github.com/google/uuid"
 
-	"worker/gokit/workertransport"
+	workertransport "worker/pkg/transport"
 	"repository/pkg/model"
 )
 

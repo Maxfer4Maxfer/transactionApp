@@ -1,4 +1,4 @@
-package workerendpoint
+package endpoint
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	stdopentracing "github.com/opentracing/opentracing-go"
 
 	"github.com/go-kit/kit/circuitbreaker"
-	"github.com/go-kit/kit/endpoint"
+	kitendpoint "github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics"
 	"github.com/go-kit/kit/ratelimit"
@@ -15,23 +15,23 @@ import (
 	"github.com/sony/gobreaker"
 	"golang.org/x/time/rate"
 
-	"worker/gokit/workerservice"
-	"worker/worker"
+	"worker/pkg/service"
+	worker "worker/pkg/model"
 )
 
 // EndpointSet collects all of the endpoints that compose a repo service. It's meant to
 // be used as a helper struct, to collect all of the endpoints into a single
 // parameter.
 type EndpointSet struct {
-	PingEndpoint    endpoint.Endpoint
-	NewJobEndpoint  endpoint.Endpoint
-	GetJobsEndpoint endpoint.Endpoint
+	PingEndpoint    kitendpoint.Endpoint
+	NewJobEndpoint  kitendpoint.Endpoint
+	GetJobsEndpoint kitendpoint.Endpoint
 }
 
 // New returns a Set that wraps the provided server, and wires in all of the
 // expected endpoint middlewares via the various parameters.
-func New(svc workerservice.Service, logger log.Logger, duration metrics.Histogram, otTracer stdopentracing.Tracer) EndpointSet {
-	var pingEndpoint endpoint.Endpoint
+func New(svc service.Service, logger log.Logger, duration metrics.Histogram, otTracer stdopentracing.Tracer) EndpointSet {
+	var pingEndpoint kitendpoint.Endpoint
 	{
 		pingEndpoint = MakePingEndpoint(svc)
 		pingEndpoint = ratelimit.NewErroringLimiter(rate.NewLimiter(rate.Every(time.Millisecond), 1))(pingEndpoint)
@@ -41,7 +41,7 @@ func New(svc workerservice.Service, logger log.Logger, duration metrics.Histogra
 		pingEndpoint = InstrumentingMiddleware(duration.With("method", "Ping"))(pingEndpoint)
 	}
 
-	var newJobEndpoint endpoint.Endpoint
+	var newJobEndpoint kitendpoint.Endpoint
 	{
 		newJobEndpoint = MakeNewJobEndpoint(svc)
 		newJobEndpoint = ratelimit.NewErroringLimiter(rate.NewLimiter(rate.Every(time.Millisecond), 1))(newJobEndpoint)
@@ -51,7 +51,7 @@ func New(svc workerservice.Service, logger log.Logger, duration metrics.Histogra
 		newJobEndpoint = InstrumentingMiddleware(duration.With("method", "NewJob"))(newJobEndpoint)
 	}
 
-	var getJobsEndpoint endpoint.Endpoint
+	var getJobsEndpoint kitendpoint.Endpoint
 	{
 		getJobsEndpoint = MakeGetJobsEndpoint(svc)
 		getJobsEndpoint = ratelimit.NewErroringLimiter(rate.NewLimiter(rate.Every(time.Millisecond), 1))(getJobsEndpoint)
@@ -92,7 +92,7 @@ type PingResponse struct {
 }
 
 // MakePingEndpoint constructs a Sum endpoint wrapping the service.
-func MakePingEndpoint(s workerservice.Service) endpoint.Endpoint {
+func MakePingEndpoint(s service.Service) kitendpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		// req := request.(PingRequest)
 		jobscount, err := s.Ping(ctx)
@@ -124,7 +124,7 @@ type NewJobResponse struct {
 }
 
 // MakeNewJobEndpoint constructs a Sum endpoint wrapping the service.
-func MakeNewJobEndpoint(s workerservice.Service) endpoint.Endpoint {
+func MakeNewJobEndpoint(s service.Service) kitendpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		// req := request.(NewJobRequest)
 		id, err := s.NewJob(ctx)
@@ -156,7 +156,7 @@ type GetJobsResponse struct {
 }
 
 // MakeGetJobsEndpoint constructs a Sum endpoint wrapping the service.
-func MakeGetJobsEndpoint(s workerservice.Service) endpoint.Endpoint {
+func MakeGetJobsEndpoint(s service.Service) kitendpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		// req := request.(GetJobsRequest)
 		jobs, err := s.GetJobs(ctx)

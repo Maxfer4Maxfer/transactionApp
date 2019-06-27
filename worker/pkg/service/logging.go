@@ -1,10 +1,11 @@
-package workerservice
+package service
 
 import (
 	"context"
-	"worker/worker"
-
+	
 	"github.com/go-kit/kit/log"
+	
+	"worker/pkg/model"
 )
 
 // LoggingMiddleware takes a logger as a dependency
@@ -34,7 +35,7 @@ func (mw loggingMiddleware) NewJob(ctx context.Context) (id string, err error) {
 	return mw.next.NewJob(ctx)
 }
 
-func (mw loggingMiddleware) GetJobs(ctx context.Context) (jobs []worker.Job, err error) {
+func (mw loggingMiddleware) GetJobs(ctx context.Context) (jobs []model.Job, err error) {
 	defer func() {
 		mw.logger.Log("method", "GetJobs", "len(jobs)", len(jobs), "err", err)
 	}()

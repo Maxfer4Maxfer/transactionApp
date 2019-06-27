@@ -1,4 +1,4 @@
-package workerendpoint
+package endpoint
 
 import (
 	"context"

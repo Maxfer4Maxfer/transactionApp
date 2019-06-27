@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 
 	repo "repository/pkg/model"
-	"repository/gokit/repotransport"
+	repotransport "repository/pkg/transport"
 
 )
 

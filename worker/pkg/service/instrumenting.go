@@ -1,10 +1,11 @@
-package workerservice
+package service
 
 import (
 	"context"
-	"worker/worker"
-
+	
 	"github.com/go-kit/kit/metrics"
+
+	"worker/pkg/model"
 )
 
 // Middleware describes a service (as opposed to endpoint) middleware.
@@ -43,7 +44,7 @@ func (mw instrumentingMiddleware) NewJob(ctx context.Context) (string, error) {
 	return id, err
 }
 
-func (mw instrumentingMiddleware) GetJobs(ctx context.Context) ([]worker.Job, error) {
+func (mw instrumentingMiddleware) GetJobs(ctx context.Context) ([]model.Job, error) {
 	jobs, err := mw.next.GetJobs(ctx)
 	mw.getJobs.Add(1)
 	return jobs, err

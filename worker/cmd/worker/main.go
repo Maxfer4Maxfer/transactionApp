@@ -25,11 +25,10 @@ import (
 	"github.com/go-kit/kit/metrics"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 
-	"worker/gokit/workerendpoint"
-	"worker/gokit/workerservice"
-	"worker/gokit/workertransport"
+	"worker/pkg/endpoint"
+	"worker/pkg/service"
+	"worker/pkg/transport"
 	workerpb "worker/pb"
-	"worker/worker"
 )
 
 func main() {
@@ -117,12 +116,10 @@ func main() {
 	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
 
 	var (
-		worker     = worker.New(*workerName, *extIP, *extPort, *natsAddr, logger)
-		service    = workerservice.New(worker, logger, pings, newJobs, getJobs)
-		endpoints  = workerendpoint.New(service, logger, duration, tracer)
-		grpcServer = workertransport.NewGRPCServer(endpoints, tracer, logger)
+		service    = service.New(*workerName, *extIP, *extPort, *natsAddr, logger, pings, newJobs, getJobs)
+		endpoints  = endpoint.New(service, logger, duration, tracer)
+		grpcServer = transport.NewGRPCServer(endpoints, tracer, logger)
 	)
-	defer worker.Stop()
 
 	// Now we're to the part of the func main where we want to start actually
 	// running things, like servers bound to listeners to receive connections.
